@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram Reels Comment Extractor",
+  "version": "1.0.0",
+  "description": "Extrai comentários e respostas de um Reel e baixa CSV.",
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Extrair comentários"
+  },
+  "background": {
+    "service_worker": "src/background/worker.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "downloads", "activeTab"],
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "https://instagram.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/reels/*",
+        "https://instagram.com/reels/*"
+      ],
+      "js": ["src/content/bootstrap.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/content/extractor.js", "src/lib/*.js"],
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://instagram.com/*"
+      ]
+    }
+  ]
+}
