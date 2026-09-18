@@ -65,3 +65,22 @@ it("treats a role=dialog root as the panel", () => {
     "View 1 reply",
   ]);
 });
+
+describe("live Reels comments tray", () => {
+  it("finds the Comments section instead of another dialog", () => {
+    const root = load("ig-reels-live.html");
+    const panel = findCommentsPanel(root);
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector("h2")?.textContent.trim()).toBe("Comments");
+    expect(panel.getAttribute("aria-label")).not.toBe("Notifications");
+  });
+
+  it("finds View all N replies controls that are not button elements", () => {
+    const root = load("ig-reels-live.html");
+    const panel = findCommentsPanel(root);
+    const labels = findReplyButtons(panel).map((el) =>
+      el.textContent.replace(/\s+/g, " ").trim(),
+    );
+    expect(labels).toEqual(["View all 2 replies", "View all 1 replies"]);
+  });
+});

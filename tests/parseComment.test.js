@@ -95,4 +95,19 @@ describe("parseCommentList heuristic (no data-comment)", () => {
       }),
     ]);
   });
+
+  it("parses live Reels comments with avatar links and no caption row", () => {
+    const root = load("ig-reels-live.html");
+    const rows = parseCommentList(root, POST);
+    expect(rows.map((r) => r.profileName)).toEqual([
+      "o_viniciusx",
+      "kleydsonpess4nha",
+    ]);
+    expect(rows[0]).toMatchObject({
+      type: "comment",
+      replyTo: "",
+    });
+    expect(rows[0].commentText).toMatch(/representante desse capricho/);
+    expect(rows[1].commentText).toMatch(/Gostei bastante da ideia/);
+  });
 });
