@@ -19,12 +19,12 @@ describe("canonicalPostUrl", () => {
   });
 
   it("rejects /reel/, /p/, and other paths", () => {
-    expect(canonicalPostUrl("https://www.instagram.com/reel/DcxhtUfOJj4/").ok).toBe(
-      false,
-    );
-    expect(canonicalPostUrl("https://www.instagram.com/p/DcxhtUfOJj4/").ok).toBe(
-      false,
-    );
+    expect(
+      canonicalPostUrl("https://www.instagram.com/reel/DcxhtUfOJj4/").ok,
+    ).toBe(false);
+    expect(
+      canonicalPostUrl("https://www.instagram.com/p/DcxhtUfOJj4/").ok,
+    ).toBe(false);
     expect(canonicalPostUrl("https://www.instagram.com/").ok).toBe(false);
   });
 

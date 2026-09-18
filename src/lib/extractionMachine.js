@@ -2,7 +2,7 @@ export function createMachine() {
   return { status: "idle", emptyStreak: 0 };
 }
 
-export function start(machine) {
+export function start(_machine) {
   return { status: "running", emptyStreak: 0 };
 }
 

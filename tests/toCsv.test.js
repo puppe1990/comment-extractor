@@ -22,9 +22,7 @@ describe("toCsv", () => {
     ]);
     expect(csv.startsWith("\uFEFF")).toBe(true);
     const body = csv.slice(1);
-    expect(body).toContain(
-      "profile_name,comment_text,type,reply_to,post_url",
-    );
+    expect(body).toContain("profile_name,comment_text,type,reply_to,post_url");
     expect(body).toContain(
       "ana,amei,comment,,https://www.instagram.com/reels/DcxhtUfOJj4/",
     );

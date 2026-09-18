@@ -31,7 +31,9 @@ describe("parseComment", () => {
   it("sets reply type and immediate parent username", () => {
     const panel = load("comment-and-replies.html");
     const reply = panel.querySelector("[data-reply]");
-    expect(parseComment(reply, { postUrl: POST, parentUsername: "ana" })).toMatchObject({
+    expect(
+      parseComment(reply, { postUrl: POST, parentUsername: "ana" }),
+    ).toMatchObject({
       id: "ig:r1",
       profileName: "bruno",
       commentText: "eu também",

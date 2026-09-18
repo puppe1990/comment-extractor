@@ -1,4 +1,8 @@
-import { findCommentsButton, findCommentsPanel, findReplyButtons } from "../lib/findComments.js";
+import {
+  findCommentsButton,
+  findCommentsPanel,
+  findReplyButtons,
+} from "../lib/findComments.js";
 import { parseCommentList } from "../lib/parseComment.js";
 import { runLoop } from "../lib/runLoop.js";
 import { scrollPanel } from "../lib/scrollPanel.js";
@@ -7,6 +11,13 @@ let stopFlag = false;
 let port = null;
 
 function connect() {
+  if (port) {
+    try {
+      port.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+  }
   port = chrome.runtime.connect({ name: "extractor" });
 }
 
@@ -49,8 +60,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       findReplyButtons,
       click: (el) => el.click(),
       scrollPanel: (panel) => {
-        const scroller =
-          panel.querySelector("[data-comments-list]") || panel;
+        const scroller = panel.querySelector("[data-comments-list]") || panel;
         scrollPanel(scroller);
       },
       delay: (ms) => new Promise((r) => setTimeout(r, ms)),

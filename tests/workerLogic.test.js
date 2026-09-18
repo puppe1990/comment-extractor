@@ -27,7 +27,11 @@ function row(id, type = "comment") {
 
 describe("workerLogic", () => {
   it("GET_STATE is unsupported off a reels URL", () => {
-    const state = handleGetState(createStore(), "https://www.instagram.com/", NOW);
+    const state = handleGetState(
+      createStore(),
+      "https://www.instagram.com/",
+      NOW,
+    );
     expect(state.supported).toBe(false);
   });
 
@@ -64,7 +68,11 @@ describe("workerLogic", () => {
       NOW + 2,
     );
     expect(second.ack.addedCount).toBe(1);
-    expect(second.store.records[URL].rows.map((r) => r.id)).toEqual(["a", "b", "c"]);
+    expect(second.store.records[URL].rows.map((r) => r.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
   });
 
   it("ignores BATCH for a different postUrl", () => {
@@ -90,7 +98,11 @@ describe("workerLogic", () => {
     let { store } = handleStart(createStore(), URL, NOW);
     store = handleFail(
       store,
-      { postUrl: URL, code: "PANEL_NOT_FOUND", message: "Abra os comentários deste Reel e tente de novo." },
+      {
+        postUrl: URL,
+        code: "PANEL_NOT_FOUND",
+        message: "Abra os comentários deste Reel e tente de novo.",
+      },
       NOW,
     ).store;
     expect(store.records[URL].status).toBe("error");
@@ -99,12 +111,16 @@ describe("workerLogic", () => {
 
   it("DOWNLOAD with 0 rows is a no-op; with rows returns csv and filename", () => {
     let store = createStore();
-    expect(handleDownload(store, URL, NOW, new Date(2026, 8, 18)).effect).toBeNull();
+    expect(
+      handleDownload(store, URL, NOW, new Date(2026, 8, 18)).effect,
+    ).toBeNull();
     store = handleStart(store, URL, NOW).store;
     store = handleBatch(store, { postUrl: URL, rows: [row("a")] }, NOW).store;
     const { effect } = handleDownload(store, URL, NOW, new Date(2026, 8, 18));
     expect(effect.type).toBe("DOWNLOAD");
-    expect(effect.filename).toBe("instagram-comments-DcxhtUfOJj4-2026-09-18.csv");
+    expect(effect.filename).toBe(
+      "instagram-comments-DcxhtUfOJj4-2026-09-18.csv",
+    );
     expect(effect.csv).toContain("profile_name");
     expect(effect.csv.startsWith("\uFEFF")).toBe(true);
   });

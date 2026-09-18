@@ -18,8 +18,10 @@ export function findProfileLink(node) {
   return (
     links.find((a) => {
       try {
-        const path = new URL(a.getAttribute("href"), "https://www.instagram.com")
-          .pathname;
+        const path = new URL(
+          a.getAttribute("href"),
+          "https://www.instagram.com",
+        ).pathname;
         const m = path.match(/^\/([A-Za-z0-9._]+)\/?$/);
         return m && !RESERVED.has(m[1].toLowerCase());
       } catch {
@@ -30,7 +32,9 @@ export function findProfileLink(node) {
 }
 
 function isCaption(node) {
-  return node.matches("[data-caption]") || Boolean(node.closest("[data-caption]"));
+  return (
+    node.matches("[data-caption]") || Boolean(node.closest("[data-caption]"))
+  );
 }
 
 export function parseComment(node, { postUrl, parentUsername = "" }) {
@@ -65,7 +69,8 @@ function walk(container, parentUsername, postUrl, rows) {
     const row = parseComment(node, { postUrl, parentUsername });
     if (row) rows.push(row);
     const nested = node.querySelector(":scope > [data-replies]");
-    if (nested) walk(nested, row ? row.profileName : parentUsername, postUrl, rows);
+    if (nested)
+      walk(nested, row ? row.profileName : parentUsername, postUrl, rows);
   }
 }
 

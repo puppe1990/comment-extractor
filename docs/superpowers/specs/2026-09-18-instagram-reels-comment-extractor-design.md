@@ -24,10 +24,10 @@ The user must already be logged into Instagram. There is no backend and no offic
 
 ## Surfaces
 
-| URL | Supported |
-|-----|-----------|
-| `https://www.instagram.com/reels/{shortcode}/` | Yes |
-| Same URL with query string or trailing extras | Yes — canonicalize before storing `post_url` |
+| URL                                                            | Supported                                                     |
+| -------------------------------------------------------------- | ------------------------------------------------------------- |
+| `https://www.instagram.com/reels/{shortcode}/`                 | Yes                                                           |
+| Same URL with query string or trailing extras                  | Yes — canonicalize before storing `post_url`                  |
 | `instagram.com/reel/{shortcode}/`, `/p/...`, feed, other hosts | No — popup explains the user must open a Reel at `/reels/...` |
 
 Canonical post URL is always `https://www.instagram.com/reels/{shortcode}/` (www, https, trailing slash, no query).  
@@ -49,17 +49,17 @@ popup  --messages-->  service worker  --messages-->  content script
                     CSV download
 ```
 
-| Unit | Does | Does not |
-|------|------|----------|
-| `popup` | Start, pause, download, show counts and status | Parse DOM, write CSV bytes except triggering download |
-| `service worker` | Own extraction session, merge batches into storage, build CSV on demand | Touch Instagram DOM |
-| `content script` | Find panel, scroll, click reply controls, collect raw nodes, send batches | Persist storage, format CSV |
-| `parseComment` / `parseCommentList` | Map a comment/reply node (or fixture HTML) to a row | Scroll or click |
-| `dedupe` | Keep first row per `id` | Know about Chrome |
-| `toCsv` | Serialize rows with header, escaping, UTF-8 BOM | Know about Instagram |
-| `canonicalPostUrl` | Normalize location href to canonical Reel URL | |
-| `extractionMachine` | start / pause / ingest batch / decide continue vs done | Touch DOM |
-| `findCommentsPanel` / `findReplyButtons` / `isCommentsPanelOpen` | Selector isolation over a root node | Network |
+| Unit                                                             | Does                                                                      | Does not                                              |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `popup`                                                          | Start, pause, download, show counts and status                            | Parse DOM, write CSV bytes except triggering download |
+| `service worker`                                                 | Own extraction session, merge batches into storage, build CSV on demand   | Touch Instagram DOM                                   |
+| `content script`                                                 | Find panel, scroll, click reply controls, collect raw nodes, send batches | Persist storage, format CSV                           |
+| `parseComment` / `parseCommentList`                              | Map a comment/reply node (or fixture HTML) to a row                       | Scroll or click                                       |
+| `dedupe`                                                         | Keep first row per `id`                                                   | Know about Chrome                                     |
+| `toCsv`                                                          | Serialize rows with header, escaping, UTF-8 BOM                           | Know about Instagram                                  |
+| `canonicalPostUrl`                                               | Normalize location href to canonical Reel URL                             |                                                       |
+| `extractionMachine`                                              | start / pause / ingest batch / decide continue vs done                    | Touch DOM                                             |
+| `findCommentsPanel` / `findReplyButtons` / `isCommentsPanelOpen` | Selector isolation over a root node                                       | Network                                               |
 
 Selectors live only in the find/parse modules. If Instagram changes markup, those modules and their fixtures change; the machine, CSV, storage, and popup stay.
 
@@ -135,17 +135,17 @@ bruno,eu também,reply,ana,https://www.instagram.com/reels/DcxhtUfOJj4/
 
 Popup ↔ worker ↔ content script. No other channels.
 
-| Message | From → to | Payload | Result |
-|---------|-----------|---------|--------|
-| `GET_STATE` | popup → worker | `{ tabId }` | Current `ExtractionRecord` plus parsed location, or `unsupported` |
-| `START` | popup → worker | `{ tabId }` | Worker validates URL, sets `running`, tells content script `RUN` |
-| `PAUSE` | popup → worker | `{ tabId }` | Sets `paused`, tells content script `STOP` |
-| `DOWNLOAD` | popup → worker | `{ tabId }` | Worker builds CSV from stored rows and uses `chrome.downloads` |
-| `RUN` | worker → content | `{ postUrl }` | Content starts or resumes the loop |
-| `STOP` | worker → content | `{}` | Content leaves the loop after the current cycle |
-| `BATCH` | content → worker | `{ postUrl, rows, hasMoreReplyButtons }` | Worker dedupes/merges, replies `ACK` with `{ totalComments, totalReplies }` derived from stored rows |
-| `DONE` | content → worker | `{ postUrl, reason: "exhausted" \| "stopped" }` | Worker sets `complete` or `paused` |
-| `FAIL` | content → worker | `{ postUrl, code, message }` | Worker sets `error` |
+| Message     | From → to        | Payload                                         | Result                                                                                               |
+| ----------- | ---------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `GET_STATE` | popup → worker   | `{ tabId }`                                     | Current `ExtractionRecord` plus parsed location, or `unsupported`                                    |
+| `START`     | popup → worker   | `{ tabId }`                                     | Worker validates URL, sets `running`, tells content script `RUN`                                     |
+| `PAUSE`     | popup → worker   | `{ tabId }`                                     | Sets `paused`, tells content script `STOP`                                                           |
+| `DOWNLOAD`  | popup → worker   | `{ tabId }`                                     | Worker builds CSV from stored rows and uses `chrome.downloads`                                       |
+| `RUN`       | worker → content | `{ postUrl }`                                   | Content starts or resumes the loop                                                                   |
+| `STOP`      | worker → content | `{}`                                            | Content leaves the loop after the current cycle                                                      |
+| `BATCH`     | content → worker | `{ postUrl, rows, hasMoreReplyButtons }`        | Worker dedupes/merges, replies `ACK` with `{ totalComments, totalReplies }` derived from stored rows |
+| `DONE`      | content → worker | `{ postUrl, reason: "exhausted" \| "stopped" }` | Worker sets `complete` or `paused`                                                                   |
+| `FAIL`      | content → worker | `{ postUrl, code, message }`                    | Worker sets `error`                                                                                  |
 
 If `BATCH.postUrl` does not match the running record, the worker ignores the batch (stale tab / navigated away).
 
@@ -191,14 +191,14 @@ Instagram does not expose a reliable total. Exhaustion is: three consecutive cyc
 
 Shown when the user clicks the extension icon.
 
-| State | UI |
-|-------|----|
-| Unsupported URL | `Abra um Reel do Instagram para extrair comentários.` Extract disabled. Download enabled only if storage already has rows for some previous session **and** we are on that same Reel; otherwise download disabled. |
-| Supported, idle, 0 rows | Extract enabled. Download disabled. Counter `0 comentários · 0 respostas`. |
-| Running | Pause enabled. Extract disabled. Counter live. Status `Extraindo…` |
-| Paused | Extract (continua) enabled. Download if rows ≥ 1. Status `Pausado`. |
-| Complete | Extract enabled (re-run / catch stragglers). Download enabled. Status `Concluído`. |
-| Error | Extract enabled. Status shows `errorMessage`. Download if rows ≥ 1. |
+| State                   | UI                                                                                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unsupported URL         | `Abra um Reel do Instagram para extrair comentários.` Extract disabled. Download enabled only if storage already has rows for some previous session **and** we are on that same Reel; otherwise download disabled. |
+| Supported, idle, 0 rows | Extract enabled. Download disabled. Counter `0 comentários · 0 respostas`.                                                                                                                                         |
+| Running                 | Pause enabled. Extract disabled. Counter live. Status `Extraindo…`                                                                                                                                                 |
+| Paused                  | Extract (continua) enabled. Download if rows ≥ 1. Status `Pausado`.                                                                                                                                                |
+| Complete                | Extract enabled (re-run / catch stragglers). Download enabled. Status `Concluído`.                                                                                                                                 |
+| Error                   | Extract enabled. Status shows `errorMessage`. Download if rows ≥ 1.                                                                                                                                                |
 
 Counter: `{n} comentários · {m} respostas` where `n` is rows with `type === "comment"` and `m` with `type === "reply"`.
 
@@ -206,12 +206,12 @@ No comment text list in the popup.
 
 ## Error catalog
 
-| Code | When | User message |
-|------|------|--------------|
-| `UNSUPPORTED_URL` | Path is not `/reels/{shortcode}` | `Abra um Reel do Instagram para extrair comentários.` |
-| `PANEL_NOT_FOUND` | Comments panel missing after trying to open it | `Abra os comentários deste Reel e tente de novo.` |
-| `NO_COMMENTS_FOUND` | Panel exists but 0 comment nodes after first timeout (~8 s) | `Não encontrei comentários neste layout. O Instagram pode ter mudado a página.` |
-| `TAB_GONE` | Content script port disconnects while running | Worker flips to `paused` if rows exist, else `idle`. Popup shows that status. No extra toast. |
+| Code                | When                                                        | User message                                                                                  |
+| ------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `UNSUPPORTED_URL`   | Path is not `/reels/{shortcode}`                            | `Abra um Reel do Instagram para extrair comentários.`                                         |
+| `PANEL_NOT_FOUND`   | Comments panel missing after trying to open it              | `Abra os comentários deste Reel e tente de novo.`                                             |
+| `NO_COMMENTS_FOUND` | Panel exists but 0 comment nodes after first timeout (~8 s) | `Não encontrei comentários neste layout. O Instagram pode ter mudado a página.`               |
+| `TAB_GONE`          | Content script port disconnects while running               | Worker flips to `paused` if rows exist, else `idle`. Popup shows that status. No extra toast. |
 
 No retry storm. User clicks Extract again.
 

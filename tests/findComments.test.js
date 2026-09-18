@@ -39,14 +39,22 @@ describe("findReplyButtons", () => {
     const labels = findReplyButtons(load("reply-buttons-en.html")).map((b) =>
       b.textContent.trim(),
     );
-    expect(labels).toEqual(["View replies", "View 3 replies", "View more replies"]);
+    expect(labels).toEqual([
+      "View replies",
+      "View 3 replies",
+      "View more replies",
+    ]);
   });
 
   it("matches Portuguese reply labels", () => {
     const labels = findReplyButtons(load("reply-buttons-pt.html")).map((b) =>
       b.textContent.trim(),
     );
-    expect(labels).toEqual(["Ver respostas", "Ver 3 respostas", "Ver mais respostas"]);
+    expect(labels).toEqual([
+      "Ver respostas",
+      "Ver 3 respostas",
+      "Ver mais respostas",
+    ]);
   });
 });
 

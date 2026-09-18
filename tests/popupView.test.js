@@ -35,11 +35,7 @@ describe("popupView", () => {
       record: {
         ...base,
         status: "running",
-        rows: [
-          { type: "comment" },
-          { type: "comment" },
-          { type: "reply" },
-        ],
+        rows: [{ type: "comment" }, { type: "comment" }, { type: "reply" }],
       },
     });
     expect(v.extractEnabled).toBe(false);
@@ -51,7 +47,10 @@ describe("popupView", () => {
 
   it("paused / complete / error flags", () => {
     expect(
-      popupView({ supported: true, record: { ...base, status: "paused", rows: [{ type: "comment" }] } }),
+      popupView({
+        supported: true,
+        record: { ...base, status: "paused", rows: [{ type: "comment" }] },
+      }),
     ).toMatchObject({
       extractEnabled: true,
       pauseEnabled: false,
@@ -59,7 +58,10 @@ describe("popupView", () => {
       statusText: "Pausado",
     });
     expect(
-      popupView({ supported: true, record: { ...base, status: "complete", rows: [{ type: "comment" }] } }),
+      popupView({
+        supported: true,
+        record: { ...base, status: "complete", rows: [{ type: "comment" }] },
+      }),
     ).toMatchObject({
       extractEnabled: true,
       downloadEnabled: true,
@@ -68,7 +70,11 @@ describe("popupView", () => {
     expect(
       popupView({
         supported: true,
-        record: { ...base, status: "error", errorMessage: ERRORS.PANEL_NOT_FOUND },
+        record: {
+          ...base,
+          status: "error",
+          errorMessage: ERRORS.PANEL_NOT_FOUND,
+        },
       }),
     ).toMatchObject({
       extractEnabled: true,

@@ -14,32 +14,32 @@
 
 ## File map
 
-| File | Responsibility |
-|------|----------------|
-| `package.json` | `"type": "module"`, `vitest` |
-| `vitest.config.js` | jsdom environment |
-| `.gitignore` | `node_modules` |
-| `manifest.json` | MV3, popup, module worker, content bootstrap, WAR for ESM |
-| `src/lib/hashId.js` | FNV-1a 64-bit; `hash:` / `ig:` ids |
-| `src/lib/canonicalPostUrl.js` | Accept only `/reels/{shortcode}`, canonicalize |
-| `src/lib/errors.js` | User-facing Portuguese messages |
-| `src/lib/toCsv.js` | BOM CSV + download filename |
-| `src/lib/dedupe.js` | Merge unique rows by `id`, keep order |
-| `src/lib/parseComment.js` | Node → row; list walk including nested replies |
-| `src/lib/findComments.js` | Panel, comments button, reply buttons, comment nodes |
-| `src/lib/extractionMachine.js` | idle/running/paused/complete + empty streak |
-| `src/lib/scrollPanel.js` | Scroll the panel container, not `window` |
-| `src/lib/workerLogic.js` | Records keyed by postUrl; START/PAUSE/BATCH/DONE/FAIL/DOWNLOAD/disconnect |
-| `src/lib/popupView.js` | Button flags, status text, counter |
-| `src/lib/runLoop.js` | Cycle: parse, batch, expand replies, scroll, stop rules |
-| `src/background/worker.js` | Chrome storage, ports, downloads, tab messaging |
-| `src/content/bootstrap.js` | Classic script; dynamic `import()` of extractor |
-| `src/content/extractor.js` | DOM adapter calling `runLoop` |
-| `src/popup/popup.html` | PT UI |
-| `src/popup/popup.css` | Layout |
-| `src/popup/popup.js` | GET_STATE / START / PAUSE / DOWNLOAD |
-| `tests/*.test.js` | One test file per lib module |
-| `tests/fixtures/*.html` | Panel shapes |
+| File                           | Responsibility                                                            |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `package.json`                 | `"type": "module"`, `vitest`                                              |
+| `vitest.config.js`             | jsdom environment                                                         |
+| `.gitignore`                   | `node_modules`                                                            |
+| `manifest.json`                | MV3, popup, module worker, content bootstrap, WAR for ESM                 |
+| `src/lib/hashId.js`            | FNV-1a 64-bit; `hash:` / `ig:` ids                                        |
+| `src/lib/canonicalPostUrl.js`  | Accept only `/reels/{shortcode}`, canonicalize                            |
+| `src/lib/errors.js`            | User-facing Portuguese messages                                           |
+| `src/lib/toCsv.js`             | BOM CSV + download filename                                               |
+| `src/lib/dedupe.js`            | Merge unique rows by `id`, keep order                                     |
+| `src/lib/parseComment.js`      | Node → row; list walk including nested replies                            |
+| `src/lib/findComments.js`      | Panel, comments button, reply buttons, comment nodes                      |
+| `src/lib/extractionMachine.js` | idle/running/paused/complete + empty streak                               |
+| `src/lib/scrollPanel.js`       | Scroll the panel container, not `window`                                  |
+| `src/lib/workerLogic.js`       | Records keyed by postUrl; START/PAUSE/BATCH/DONE/FAIL/DOWNLOAD/disconnect |
+| `src/lib/popupView.js`         | Button flags, status text, counter                                        |
+| `src/lib/runLoop.js`           | Cycle: parse, batch, expand replies, scroll, stop rules                   |
+| `src/background/worker.js`     | Chrome storage, ports, downloads, tab messaging                           |
+| `src/content/bootstrap.js`     | Classic script; dynamic `import()` of extractor                           |
+| `src/content/extractor.js`     | DOM adapter calling `runLoop`                                             |
+| `src/popup/popup.html`         | PT UI                                                                     |
+| `src/popup/popup.css`          | Layout                                                                    |
+| `src/popup/popup.js`           | GET_STATE / START / PAUSE / DOWNLOAD                                      |
+| `tests/*.test.js`              | One test file per lib module                                              |
+| `tests/fixtures/*.html`        | Panel shapes                                                              |
 
 Do not create a bundler, React, or settings page.
 
@@ -48,6 +48,7 @@ Do not create a bundler, React, or settings page.
 ### Task 1: Scaffold Vitest
 
 **Files:**
+
 - Create: `package.json`
 - Create: `vitest.config.js`
 - Create: `.gitignore`
@@ -109,6 +110,7 @@ git commit -m "chore: scaffold vitest for the chrome extension"
 ### Task 2: hashId
 
 **Files:**
+
 - Create: `tests/hashId.test.js`
 - Create: `src/lib/hashId.js`
 
@@ -197,6 +199,7 @@ git commit -m "feat: add stable comment ids"
 ### Task 3: canonicalPostUrl
 
 **Files:**
+
 - Create: `tests/canonicalPostUrl.test.js`
 - Create: `src/lib/canonicalPostUrl.js`
 
@@ -224,12 +227,12 @@ describe("canonicalPostUrl", () => {
   });
 
   it("rejects /reel/, /p/, and other paths", () => {
-    expect(canonicalPostUrl("https://www.instagram.com/reel/DcxhtUfOJj4/").ok).toBe(
-      false,
-    );
-    expect(canonicalPostUrl("https://www.instagram.com/p/DcxhtUfOJj4/").ok).toBe(
-      false,
-    );
+    expect(
+      canonicalPostUrl("https://www.instagram.com/reel/DcxhtUfOJj4/").ok,
+    ).toBe(false);
+    expect(
+      canonicalPostUrl("https://www.instagram.com/p/DcxhtUfOJj4/").ok,
+    ).toBe(false);
     expect(canonicalPostUrl("https://www.instagram.com/").ok).toBe(false);
   });
 
@@ -288,6 +291,7 @@ git commit -m "feat: canonicalize Instagram reels URLs"
 ### Task 4: errors and CSV helpers
 
 **Files:**
+
 - Create: `tests/toCsv.test.js`
 - Create: `src/lib/errors.js`
 - Create: `src/lib/toCsv.js`
@@ -319,9 +323,7 @@ describe("toCsv", () => {
     ]);
     expect(csv.startsWith("\uFEFF")).toBe(true);
     const body = csv.slice(1);
-    expect(body).toContain(
-      "profile_name,comment_text,type,reply_to,post_url",
-    );
+    expect(body).toContain("profile_name,comment_text,type,reply_to,post_url");
     expect(body).toContain(
       "ana,amei,comment,,https://www.instagram.com/reels/DcxhtUfOJj4/",
     );
@@ -388,13 +390,7 @@ export const ERRORS = {
 `src/lib/toCsv.js`:
 
 ```js
-const HEADER = [
-  "profile_name",
-  "comment_text",
-  "type",
-  "reply_to",
-  "post_url",
-];
+const HEADER = ["profile_name", "comment_text", "type", "reply_to", "post_url"];
 
 function escapeField(value) {
   const s = value == null ? "" : String(value);
@@ -406,13 +402,7 @@ export function toCsv(rows) {
   const lines = [HEADER.join(",")];
   for (const row of rows) {
     lines.push(
-      [
-        row.profileName,
-        row.commentText,
-        row.type,
-        row.replyTo,
-        row.postUrl,
-      ]
+      [row.profileName, row.commentText, row.type, row.replyTo, row.postUrl]
         .map(escapeField)
         .join(","),
     );
@@ -450,6 +440,7 @@ git commit -m "feat: serialize comments CSV with BOM"
 ### Task 5: dedupe
 
 **Files:**
+
 - Create: `tests/dedupe.test.js`
 - Create: `src/lib/dedupe.js`
 
@@ -519,6 +510,7 @@ git commit -m "feat: dedupe comment rows by id"
 ### Task 6: parseComment (top-level and replies)
 
 **Files:**
+
 - Create: `tests/fixtures/one-comment.html`
 - Create: `tests/fixtures/comment-and-replies.html`
 - Create: `tests/fixtures/nested-replies.html`
@@ -632,7 +624,9 @@ describe("parseComment", () => {
   it("sets reply type and immediate parent username", () => {
     const panel = load("comment-and-replies.html");
     const reply = panel.querySelector("[data-reply]");
-    expect(parseComment(reply, { postUrl: POST, parentUsername: "ana" })).toMatchObject({
+    expect(
+      parseComment(reply, { postUrl: POST, parentUsername: "ana" }),
+    ).toMatchObject({
       id: "ig:r1",
       profileName: "bruno",
       commentText: "eu também",
@@ -706,8 +700,10 @@ export function findProfileLink(node) {
   return (
     links.find((a) => {
       try {
-        const path = new URL(a.getAttribute("href"), "https://www.instagram.com")
-          .pathname;
+        const path = new URL(
+          a.getAttribute("href"),
+          "https://www.instagram.com",
+        ).pathname;
         const m = path.match(/^\/([A-Za-z0-9._]+)\/?$/);
         return m && !RESERVED.has(m[1].toLowerCase());
       } catch {
@@ -718,7 +714,9 @@ export function findProfileLink(node) {
 }
 
 function isCaption(node) {
-  return node.matches("[data-caption]") || Boolean(node.closest("[data-caption]"));
+  return (
+    node.matches("[data-caption]") || Boolean(node.closest("[data-caption]"))
+  );
 }
 
 export function parseComment(node, { postUrl, parentUsername = "" }) {
@@ -753,7 +751,8 @@ function walk(container, parentUsername, postUrl, rows) {
     const row = parseComment(node, { postUrl, parentUsername });
     if (row) rows.push(row);
     const nested = node.querySelector(":scope > [data-replies]");
-    if (nested) walk(nested, row ? row.profileName : parentUsername, postUrl, rows);
+    if (nested)
+      walk(nested, row ? row.profileName : parentUsername, postUrl, rows);
   }
 }
 
@@ -761,7 +760,7 @@ export function parseCommentList(root, postUrl) {
   const rows = [];
   const panel = root.matches("[data-comments-panel]")
     ? root
-    : root.querySelector("[data-comments-panel]") ?? root;
+    : (root.querySelector("[data-comments-panel]") ?? root);
   walk(panel, "", postUrl, rows);
   return rows;
 }
@@ -785,6 +784,7 @@ git commit -m "feat: parse comments and nested replies from panel DOM"
 ### Task 7: findComments (panel and reply buttons)
 
 **Files:**
+
 - Create: `tests/fixtures/panel-open.html`
 - Create: `tests/fixtures/panel-closed.html`
 - Create: `tests/fixtures/reply-buttons-en.html`
@@ -884,14 +884,22 @@ describe("findReplyButtons", () => {
     const labels = findReplyButtons(load("reply-buttons-en.html")).map((b) =>
       b.textContent.trim(),
     );
-    expect(labels).toEqual(["View replies", "View 3 replies", "View more replies"]);
+    expect(labels).toEqual([
+      "View replies",
+      "View 3 replies",
+      "View more replies",
+    ]);
   });
 
   it("matches Portuguese reply labels", () => {
     const labels = findReplyButtons(load("reply-buttons-pt.html")).map((b) =>
       b.textContent.trim(),
     );
-    expect(labels).toEqual(["Ver respostas", "Ver 3 respostas", "Ver mais respostas"]);
+    expect(labels).toEqual([
+      "Ver respostas",
+      "Ver 3 respostas",
+      "Ver mais respostas",
+    ]);
   });
 });
 ```
@@ -958,6 +966,7 @@ git commit -m "feat: find comments panel and reply expanders"
 ### Task 8: extractionMachine
 
 **Files:**
+
 - Create: `tests/extractionMachine.test.js`
 - Create: `src/lib/extractionMachine.js`
 
@@ -1061,6 +1070,7 @@ git commit -m "feat: extraction state machine with reply-aware exhaustion"
 ### Task 9: scrollPanel
 
 **Files:**
+
 - Create: `tests/scrollPanel.test.js`
 - Create: `src/lib/scrollPanel.js`
 
@@ -1135,6 +1145,7 @@ git commit -m "feat: scroll the comments panel container"
 ### Task 10: workerLogic
 
 **Files:**
+
 - Create: `tests/workerLogic.test.js`
 - Create: `src/lib/workerLogic.js`
 
@@ -1172,7 +1183,11 @@ function row(id, type = "comment") {
 
 describe("workerLogic", () => {
   it("GET_STATE is unsupported off a reels URL", () => {
-    const state = handleGetState(createStore(), "https://www.instagram.com/", NOW);
+    const state = handleGetState(
+      createStore(),
+      "https://www.instagram.com/",
+      NOW,
+    );
     expect(state.supported).toBe(false);
   });
 
@@ -1209,7 +1224,11 @@ describe("workerLogic", () => {
       NOW + 2,
     );
     expect(second.ack.addedCount).toBe(1);
-    expect(second.store.records[URL].rows.map((r) => r.id)).toEqual(["a", "b", "c"]);
+    expect(second.store.records[URL].rows.map((r) => r.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
   });
 
   it("ignores BATCH for a different postUrl", () => {
@@ -1235,7 +1254,11 @@ describe("workerLogic", () => {
     let { store } = handleStart(createStore(), URL, NOW);
     store = handleFail(
       store,
-      { postUrl: URL, code: "PANEL_NOT_FOUND", message: "Abra os comentários deste Reel e tente de novo." },
+      {
+        postUrl: URL,
+        code: "PANEL_NOT_FOUND",
+        message: "Abra os comentários deste Reel e tente de novo.",
+      },
       NOW,
     ).store;
     expect(store.records[URL].status).toBe("error");
@@ -1244,12 +1267,16 @@ describe("workerLogic", () => {
 
   it("DOWNLOAD with 0 rows is a no-op; with rows returns csv and filename", () => {
     let store = createStore();
-    expect(handleDownload(store, URL, NOW, new Date(2026, 8, 18)).effect).toBeNull();
+    expect(
+      handleDownload(store, URL, NOW, new Date(2026, 8, 18)).effect,
+    ).toBeNull();
     store = handleStart(store, URL, NOW).store;
     store = handleBatch(store, { postUrl: URL, rows: [row("a")] }, NOW).store;
     const { effect } = handleDownload(store, URL, NOW, new Date(2026, 8, 18));
     expect(effect.type).toBe("DOWNLOAD");
-    expect(effect.filename).toBe("instagram-comments-DcxhtUfOJj4-2026-09-18.csv");
+    expect(effect.filename).toBe(
+      "instagram-comments-DcxhtUfOJj4-2026-09-18.csv",
+    );
     expect(effect.csv).toContain("profile_name");
     expect(effect.csv.startsWith("\uFEFF")).toBe(true);
   });
@@ -1335,21 +1362,34 @@ export function handleGetState(store, tabUrl, now) {
   const record =
     store.records[parsed.postUrl] ??
     emptyRecord(parsed.postUrl, parsed.shortcode, now);
-  return { supported: true, record, postUrl: parsed.postUrl, shortcode: parsed.shortcode };
+  return {
+    supported: true,
+    record,
+    postUrl: parsed.postUrl,
+    shortcode: parsed.shortcode,
+  };
 }
 
 export function handleStart(store, tabUrl, now) {
   const parsed = canonicalPostUrl(tabUrl);
   if (!parsed.ok) return { store, effect: null, error: "UNSUPPORTED_URL" };
   store = ensureRecord(store, parsed.postUrl, parsed.shortcode, now);
-  store = patch(store, parsed.postUrl, now, { status: "running", errorMessage: "" });
+  store = patch(store, parsed.postUrl, now, {
+    status: "running",
+    errorMessage: "",
+  });
   store = { ...store, runningPostUrl: parsed.postUrl };
-  return { store, effect: { type: "RUN", postUrl: parsed.postUrl }, error: null };
+  return {
+    store,
+    effect: { type: "RUN", postUrl: parsed.postUrl },
+    error: null,
+  };
 }
 
 export function handlePause(store, now) {
   const postUrl = store.runningPostUrl;
-  if (!postUrl || !store.records[postUrl]) return { store, effect: { type: "STOP" } };
+  if (!postUrl || !store.records[postUrl])
+    return { store, effect: { type: "STOP" } };
   store = patch(store, postUrl, now, { status: "paused" });
   store = { ...store, runningPostUrl: null };
   return { store, effect: { type: "STOP" } };
@@ -1364,7 +1404,11 @@ export function handleBatch(store, { postUrl, rows }, now) {
   const { comments, replies } = counts(merged);
   return {
     store,
-    ack: { addedCount: added.length, totalComments: comments, totalReplies: replies },
+    ack: {
+      addedCount: added.length,
+      totalComments: comments,
+      totalReplies: replies,
+    },
   };
 }
 
@@ -1372,7 +1416,8 @@ export function handleDone(store, { postUrl, reason }, now) {
   if (!store.records[postUrl]) return { store };
   const status = reason === "exhausted" ? "complete" : "paused";
   store = patch(store, postUrl, now, { status });
-  if (store.runningPostUrl === postUrl) store = { ...store, runningPostUrl: null };
+  if (store.runningPostUrl === postUrl)
+    store = { ...store, runningPostUrl: null };
   return { store };
 }
 
@@ -1382,7 +1427,8 @@ export function handleFail(store, { postUrl, code, message }, now) {
     status: "error",
     errorMessage: message || ERRORS[code] || code,
   });
-  if (store.runningPostUrl === postUrl) store = { ...store, runningPostUrl: null };
+  if (store.runningPostUrl === postUrl)
+    store = { ...store, runningPostUrl: null };
   return { store };
 }
 
@@ -1428,6 +1474,7 @@ git commit -m "feat: reduce worker session, merge batches, and CSV download"
 ### Task 11: popupView
 
 **Files:**
+
 - Create: `tests/popupView.test.js`
 - Create: `src/lib/popupView.js`
 
@@ -1471,11 +1518,7 @@ describe("popupView", () => {
       record: {
         ...base,
         status: "running",
-        rows: [
-          { type: "comment" },
-          { type: "comment" },
-          { type: "reply" },
-        ],
+        rows: [{ type: "comment" }, { type: "comment" }, { type: "reply" }],
       },
     });
     expect(v.extractEnabled).toBe(false);
@@ -1487,7 +1530,10 @@ describe("popupView", () => {
 
   it("paused / complete / error flags", () => {
     expect(
-      popupView({ supported: true, record: { ...base, status: "paused", rows: [{ type: "comment" }] } }),
+      popupView({
+        supported: true,
+        record: { ...base, status: "paused", rows: [{ type: "comment" }] },
+      }),
     ).toMatchObject({
       extractEnabled: true,
       pauseEnabled: false,
@@ -1495,7 +1541,10 @@ describe("popupView", () => {
       statusText: "Pausado",
     });
     expect(
-      popupView({ supported: true, record: { ...base, status: "complete", rows: [{ type: "comment" }] } }),
+      popupView({
+        supported: true,
+        record: { ...base, status: "complete", rows: [{ type: "comment" }] },
+      }),
     ).toMatchObject({
       extractEnabled: true,
       downloadEnabled: true,
@@ -1504,7 +1553,11 @@ describe("popupView", () => {
     expect(
       popupView({
         supported: true,
-        record: { ...base, status: "error", errorMessage: ERRORS.PANEL_NOT_FOUND },
+        record: {
+          ...base,
+          status: "error",
+          errorMessage: ERRORS.PANEL_NOT_FOUND,
+        },
       }),
     ).toMatchObject({
       extractEnabled: true,
@@ -1612,6 +1665,7 @@ git commit -m "feat: derive popup labels and button state"
 ### Task 12: runLoop
 
 **Files:**
+
 - Create: `tests/runLoop.test.js`
 - Create: `src/lib/runLoop.js`
 
@@ -1865,6 +1919,7 @@ git commit -m "feat: extraction loop with reply expansion and exhaustion"
 Required. Instagram does not ship `data-comment`. Do not poke production to invent selectors. No hashed class names.
 
 **Files:**
+
 - Create: `tests/fixtures/ig-reels-panel.html`
 - Modify: `tests/parseComment.test.js`
 - Modify: `tests/findComments.test.js`
@@ -2043,6 +2098,7 @@ git commit -m "feat: parse Instagram reels comments without data-comment hooks"
 ### Task 14: Manifest, popup UI, content bootstrap
 
 **Files:**
+
 - Create: `manifest.json`
 - Create: `src/popup/popup.html`
 - Create: `src/popup/popup.css`
@@ -2087,10 +2143,7 @@ Config / glue. Chrome APIs live only here. Keep adapters thin.
   "web_accessible_resources": [
     {
       "resources": ["src/content/extractor.js", "src/lib/*.js"],
-      "matches": [
-        "https://www.instagram.com/*",
-        "https://instagram.com/*"
-      ]
+      "matches": ["https://www.instagram.com/*", "https://instagram.com/*"]
     }
   ]
 }
@@ -2126,7 +2179,9 @@ Config / glue. Chrome APIs live only here. Keep adapters thin.
 
 ```css
 body {
-  font: 14px/1.4 system-ui, sans-serif;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
   width: 280px;
   margin: 0;
   padding: 12px;
@@ -2350,7 +2405,11 @@ chrome.runtime.onConnect.addListener((port) => {
 `src/content/extractor.js`:
 
 ```js
-import { findCommentsButton, findCommentsPanel, findReplyButtons } from "../lib/findComments.js";
+import {
+  findCommentsButton,
+  findCommentsPanel,
+  findReplyButtons,
+} from "../lib/findComments.js";
 import { parseCommentList } from "../lib/parseComment.js";
 import { runLoop } from "../lib/runLoop.js";
 import { scrollPanel } from "../lib/scrollPanel.js";
@@ -2399,8 +2458,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       findReplyButtons,
       click: (el) => el.click(),
       scrollPanel: (panel) => {
-        const scroller =
-          panel.querySelector("[data-comments-list]") || panel;
+        const scroller = panel.querySelector("[data-comments-list]") || panel;
         scrollPanel(scroller);
       },
       delay: (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -2460,24 +2518,24 @@ Requires Task 13 (heuristic parser) to already be merged so live markup without 
 
 ## Self-review (plan vs spec)
 
-| Spec requirement | Task |
-|------------------|------|
-| `/reels/{shortcode}/` only, canonical www URL | Task 3 |
-| CSV columns + BOM + escape + filename | Task 4 |
-| Dedupe by id, ig id preferred | Tasks 2, 5 |
-| Parse comment + reply + nested `reply_to` | Tasks 6, 13 |
-| Skip caption | Tasks 6, 13 |
-| Find panel / PT+EN reply buttons | Task 7 |
-| Machine: 3 empty cycles, do not finish while replies remain | Task 8 |
-| Scroll panel not window | Task 9 |
-| Incremental merge, ignore stale postUrl | Task 10 |
-| DOWNLOAD no-op on 0 rows | Task 10 |
-| Disconnect → paused/idle | Task 10 |
-| Popup PT copy, counter split, button flags | Task 11 |
-| Loop: open panel, batch, expand, 8s NO_COMMENTS | Task 12 |
-| Heuristic parse without data-comment | Task 13 |
-| MV3, permissions, ESM content bootstrap | Task 14 |
-| Replies mandatory on live IG | Tasks 13, 15 |
-| Errors catalog | Task 4 + worker FAIL |
+| Spec requirement                                            | Task                 |
+| ----------------------------------------------------------- | -------------------- |
+| `/reels/{shortcode}/` only, canonical www URL               | Task 3               |
+| CSV columns + BOM + escape + filename                       | Task 4               |
+| Dedupe by id, ig id preferred                               | Tasks 2, 5           |
+| Parse comment + reply + nested `reply_to`                   | Tasks 6, 13          |
+| Skip caption                                                | Tasks 6, 13          |
+| Find panel / PT+EN reply buttons                            | Task 7               |
+| Machine: 3 empty cycles, do not finish while replies remain | Task 8               |
+| Scroll panel not window                                     | Task 9               |
+| Incremental merge, ignore stale postUrl                     | Task 10              |
+| DOWNLOAD no-op on 0 rows                                    | Task 10              |
+| Disconnect → paused/idle                                    | Task 10              |
+| Popup PT copy, counter split, button flags                  | Task 11              |
+| Loop: open panel, batch, expand, 8s NO_COMMENTS             | Task 12              |
+| Heuristic parse without data-comment                        | Task 13              |
+| MV3, permissions, ESM content bootstrap                     | Task 14              |
+| Replies mandatory on live IG                                | Tasks 13, 15         |
+| Errors catalog                                              | Task 4 + worker FAIL |
 
 No TBD left. Types: `CommentRow` fields `id, profileName, commentText, type, replyTo, postUrl` are consistent across parse, csv, worker, popup. Message names `GET_STATE START PAUSE DOWNLOAD RUN STOP BATCH DONE FAIL` match the spec.

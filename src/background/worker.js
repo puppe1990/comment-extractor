@@ -25,7 +25,7 @@ function broadcast(state) {
   chrome.runtime.sendMessage({ type: "STATE", state }).catch(() => {});
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     let store = await loadStore();
     const now = Date.now();
