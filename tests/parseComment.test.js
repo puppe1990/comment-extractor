@@ -96,6 +96,19 @@ describe("parseCommentList heuristic (no data-comment)", () => {
     ]);
   });
 
+  it("parses comments from permalinks on a full Reels page dump", () => {
+    const root = load("ig-reels-page-dump.html");
+    const rows = parseCommentList(root, POST);
+    expect(rows.map((r) => r.profileName)).toEqual([
+      "o_viniciusx",
+      "kleydsonpess4nha",
+    ]);
+    expect(rows[0].id).toBe("ig:18114490975965464");
+    expect(rows[1].id).toBe("ig:17904239040487551");
+    expect(rows[0].commentText).toMatch(/representante desse capricho/);
+    expect(rows.some((r) => r.profileName === "degustar.io")).toBe(false);
+  });
+
   it("parses live Reels comments with avatar links and no caption row", () => {
     const root = load("ig-reels-live.html");
     const rows = parseCommentList(root, POST);

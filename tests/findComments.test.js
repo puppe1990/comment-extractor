@@ -66,6 +66,18 @@ it("treats a role=dialog root as the panel", () => {
   ]);
 });
 
+describe("live Reels comments tray from page dump", () => {
+  it("finds the overlay via comment permalinks, not main", () => {
+    const root = load("ig-reels-page-dump.html");
+    const panel = findCommentsPanel(root);
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector("a[href*='/c/']")).not.toBeNull();
+    expect(panel.querySelector("main")).toBeNull();
+    expect(panel.textContent).toMatch(/o_viniciusx/);
+    expect(panel.textContent).not.toMatch(/82\.5K/);
+  });
+});
+
 describe("live Reels comments tray", () => {
   it("finds the Comments section instead of another dialog", () => {
     const root = load("ig-reels-live.html");

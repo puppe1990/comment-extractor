@@ -1,4 +1,8 @@
-import { findCommentsPanel, isReplyExpanderLabel } from "./findComments.js";
+import {
+  commentIdFromHref,
+  findCommentsPanel,
+  isReplyExpanderLabel,
+} from "./findComments.js";
 import { commentId } from "./hashId.js";
 
 const RESERVED = new Set([
@@ -38,17 +42,33 @@ export function findProfileLink(node) {
 
 export function usernameFromLink(link) {
   if (!link) return "";
-  const fromText = link.textContent.trim().replace(/^@/, "");
-  if (fromText && /^[A-Za-z0-9._]+$/.test(fromText)) return fromText;
+  const href = link.getAttribute("href") || "";
+  if (commentIdFromHref(href)) return "";
   try {
-    const path = new URL(link.getAttribute("href"), "https://www.instagram.com")
-      .pathname;
-    const m = path.match(/^\/([A-Za-z0-9._]+)\/?$/);
-    if (m && !RESERVED.has(m[1].toLowerCase())) return m[1];
+    const path = new URL(href, "https://www.instagram.com").pathname;
+    const match = path.match(/^\/([A-Za-z0-9._]+)\/?$/);
+    if (match && !RESERVED.has(match[1].toLowerCase())) return match[1];
   } catch {
-    return "";
+    /* fall through to visible text */
+  }
+  const fromText = link.textContent.trim().replace(/^@/, "");
+  if (TIME_RE.test(fromText) || /^https?:/i.test(fromText)) return "";
+  if (
+    fromText &&
+    /^[A-Za-z0-9._]+$/.test(fromText) &&
+    !RESERVED.has(fromText.toLowerCase())
+  ) {
+    return fromText;
   }
   return "";
+}
+
+function igIdFromBlock(block) {
+  for (const anchor of block.querySelectorAll("a[href]")) {
+    const id = commentIdFromHref(anchor.getAttribute("href") || "");
+    if (id) return id;
+  }
+  return null;
 }
 
 function isCaption(node) {
@@ -110,6 +130,7 @@ function isNoiseText(line, profileName) {
   if (!line || line === profileName || line === `@${profileName}`) return true;
   if (TIME_RE.test(line) || CHROME_LINE_RE.test(line)) return true;
   if (isReplyExpanderLabel(line)) return true;
+  if (/^https?:\/\//i.test(line)) return true;
   return /^\d+$/.test(line);
 }
 
@@ -153,7 +174,79 @@ function blockForLink(link, panel) {
   return node;
 }
 
+function textBetween(start, end, profileName) {
+  const bits = [];
+  let node = start.nextSibling;
+  while (node && node !== end) {
+    if (end && node.contains?.(end)) break;
+    const raw = (node.innerText || node.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (raw && !isNoiseText(raw, profileName)) {
+      const firstLine = raw.split(" ").join(" ").replace(/\s+/g, " ").trim();
+      if (!isNoiseText(firstLine.split(" Reply")[0].trim(), profileName)) {
+        bits.push(raw);
+      }
+    }
+    node = node.nextSibling;
+  }
+  for (const bit of bits) {
+    const line = bit
+      .split("\n")
+      .map((part) => part.replace(/\s+/g, " ").trim())
+      .find((part) => !isNoiseText(part, profileName));
+    if (line) return line;
+  }
+  return bits[0] || "";
+}
+
+function parseByPermalinks(panel, permalinks, postUrl) {
+  const anchors = [...panel.querySelectorAll("a[href]")];
+  const rows = [];
+  const seen = new Set();
+  for (let i = 0; i < permalinks.length; i += 1) {
+    const timeLink = permalinks[i];
+    const igId = commentIdFromHref(timeLink.getAttribute("href") || "");
+    const index = anchors.indexOf(timeLink);
+    let profileName = "";
+    for (let j = index - 1; j >= 0; j -= 1) {
+      const name = usernameFromLink(anchors[j]);
+      if (name) {
+        profileName = name;
+        break;
+      }
+    }
+    const commentText = textBetween(
+      timeLink,
+      permalinks[i + 1] || null,
+      profileName,
+    );
+    if (!profileName || !commentText) continue;
+    if (seen.has(igId)) continue;
+    seen.add(igId);
+    rows.push({
+      id: commentId(igId, {
+        profileName,
+        type: "comment",
+        replyTo: "",
+        commentText,
+      }),
+      profileName,
+      commentText,
+      type: "comment",
+      replyTo: "",
+      postUrl,
+    });
+  }
+  return rows;
+}
+
 function parseHeuristic(panel, postUrl) {
+  const permalinks = [...panel.querySelectorAll("a[href]")].filter((anchor) =>
+    commentIdFromHref(anchor.getAttribute("href") || ""),
+  );
+  if (permalinks.length) return parseByPermalinks(panel, permalinks, postUrl);
+
   const links = profileLinksInOrder(panel);
   const rows = [];
   const seen = [];
@@ -171,8 +264,10 @@ function parseHeuristic(panel, postUrl) {
         break;
       }
     }
+    const igId = igIdFromBlock(block);
     if (
       !parentUsername &&
+      !igId &&
       !looksLikeCommentChrome(block) &&
       !block.querySelector("[data-comment-text]")
     ) {
@@ -180,11 +275,11 @@ function parseHeuristic(panel, postUrl) {
     }
     const type = parentUsername ? "reply" : "comment";
     const replyTo = parentUsername;
-    const key = `${profileName}\n${type}\n${replyTo}\n${commentText}`;
+    const key = igId || `${profileName}\n${type}\n${replyTo}\n${commentText}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
     rows.push({
-      id: commentId(null, { profileName, type, replyTo, commentText }),
+      id: commentId(igId, { profileName, type, replyTo, commentText }),
       profileName,
       commentText,
       type,

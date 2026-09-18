@@ -5,6 +5,34 @@ const COMMENT_BTN_RE = /comment|coment[aá]rio|comentar/i;
 const PANEL_HEADING_RE = /^(comments|comentários)$/i;
 const COMPOSER_RE = /add a comment|adicione um coment[aá]rio/i;
 
+export function commentIdFromHref(href) {
+  try {
+    const path = new URL(href, "https://www.instagram.com").pathname;
+    const match = path.match(/\/(?:p|reel|reels)\/[^/]+\/c\/(\d+)\/?$/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+export function findCommentPermalinkAnchors(root) {
+  if (!root?.querySelectorAll) return [];
+  return [...root.querySelectorAll("a[href]")].filter((anchor) =>
+    Boolean(commentIdFromHref(anchor.getAttribute("href") || "")),
+  );
+}
+
+function panelFromCommentLinks(root) {
+  const anchors = findCommentPermalinkAnchors(root);
+  if (!anchors.length) return null;
+  let node = anchors[0].parentElement;
+  while (node && node !== root) {
+    if (anchors.every((anchor) => node.contains(anchor))) return node;
+    node = node.parentElement;
+  }
+  return node;
+}
+
 export function isReplyExpanderLabel(text) {
   return REPLY_RE.test(
     String(text || "")
@@ -55,6 +83,9 @@ export function findCommentsPanel(root) {
         PANEL_HEADING_RE.test((el.textContent || "").trim()),
     );
   if (heading) return climbFromHeading(heading);
+
+  const fromLinks = panelFromCommentLinks(root);
+  if (fromLinks) return fromLinks;
 
   if (root.matches?.("[data-comments-panel], [role='dialog']")) return root;
   return (
