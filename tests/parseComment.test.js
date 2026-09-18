@@ -74,3 +74,23 @@ describe("parseCommentList", () => {
     expect(rows[0].profileName).toBe("ana");
   });
 });
+
+describe("parseCommentList heuristic (no data-comment)", () => {
+  it("skips the first caption block and parses nested replies", () => {
+    const panel = load("ig-reels-panel.html");
+    expect(parseCommentList(panel, POST)).toEqual([
+      expect.objectContaining({
+        profileName: "ana",
+        commentText: "amei",
+        type: "comment",
+        replyTo: "",
+      }),
+      expect.objectContaining({
+        profileName: "bruno",
+        commentText: "eu também",
+        type: "reply",
+        replyTo: "ana",
+      }),
+    ]);
+  });
+});

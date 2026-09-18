@@ -4,10 +4,12 @@ const REPLY_RE =
 const COMMENT_BTN_RE = /comment|coment[aá]rio|comentar/i;
 
 export function findCommentsPanel(root) {
+  if (!root) return null;
+  if (root.matches?.("[data-comments-panel], [role='dialog']")) return root;
   return (
     root.querySelector("[data-comments-panel]") ||
     root.querySelector('[role="dialog"]') ||
-    (root.matches?.("[data-comments-panel]") ? root : null)
+    null
   );
 }
 

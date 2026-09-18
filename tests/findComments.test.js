@@ -49,3 +49,11 @@ describe("findReplyButtons", () => {
     expect(labels).toEqual(["Ver respostas", "Ver 3 respostas", "Ver mais respostas"]);
   });
 });
+
+it("treats a role=dialog root as the panel", () => {
+  const panel = load("ig-reels-panel.html");
+  expect(findCommentsPanel(panel)).toBe(panel);
+  expect(findReplyButtons(panel).map((b) => b.textContent.trim())).toEqual([
+    "View 1 reply",
+  ]);
+});

@@ -69,11 +69,70 @@ function walk(container, parentUsername, postUrl, rows) {
   }
 }
 
+function profileLinksInOrder(panel) {
+  return [...panel.querySelectorAll("a[href]")].filter((a) =>
+    Boolean(findProfileLink(a.parentElement ?? a)),
+  );
+}
+
+function commentTextFromBlock(block, profileName) {
+  const spans = [...block.querySelectorAll("span")];
+  const hit = spans.find((s) => {
+    const t = s.textContent.trim();
+    if (!t || t === profileName) return false;
+    if (s.closest("button")) return false;
+    return true;
+  });
+  return hit ? hit.textContent.trim() : "";
+}
+
+function parseHeuristic(panel, postUrl) {
+  const links = profileLinksInOrder(panel);
+  const rows = [];
+  const seen = [];
+  for (let i = 1; i < links.length; i += 1) {
+    const link = links[i];
+    const profileName = link.textContent.trim().replace(/^@/, "");
+    const block = link.parentElement;
+    const commentText = commentTextFromBlock(block, profileName);
+    if (!profileName || !commentText) continue;
+    let parentUsername = "";
+    for (let j = seen.length - 1; j >= 0; j -= 1) {
+      if (seen[j].el.contains(block) && seen[j].el !== block) {
+        parentUsername = seen[j].profileName;
+        break;
+      }
+    }
+    const type = parentUsername ? "reply" : "comment";
+    const replyTo = parentUsername;
+    rows.push({
+      id: commentId(null, { profileName, type, replyTo, commentText }),
+      profileName,
+      commentText,
+      type,
+      replyTo,
+      postUrl,
+    });
+    seen.push({ el: block, profileName });
+  }
+  return rows;
+}
+
 export function parseCommentList(root, postUrl) {
   const rows = [];
-  const panel = root.matches("[data-comments-panel]")
-    ? root
-    : root.querySelector("[data-comments-panel]") ?? root;
-  walk(panel, "", postUrl, rows);
-  return rows;
+  const panel = findPanel(root);
+  if (panel.querySelector("[data-comment]")) {
+    walk(panel, "", postUrl, rows);
+    return rows;
+  }
+  return parseHeuristic(panel, postUrl);
+}
+
+function findPanel(root) {
+  if (root.matches?.("[data-comments-panel], [role='dialog']")) return root;
+  return (
+    root.querySelector("[data-comments-panel]") ||
+    root.querySelector('[role="dialog"]') ||
+    root
+  );
 }
