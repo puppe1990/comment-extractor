@@ -96,6 +96,23 @@ describe("parseCommentList heuristic (no data-comment)", () => {
     ]);
   });
 
+  it("parses Instagram overlay where comment text is not a sibling of the timestamp link", () => {
+    const panel = load("ig-reels-real-overlay.html");
+    const rows = parseCommentList(panel, POST);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({
+      id: "ig:18114490975965464",
+      profileName: "o_viniciusx",
+      type: "comment",
+    });
+    expect(rows[0].commentText).toMatch(/representante desse capricho/);
+    expect(rows[1]).toMatchObject({
+      id: "ig:17904239040487551",
+      profileName: "kleydsonpess4nha",
+    });
+    expect(rows[1].commentText).toMatch(/Gostei bastante da ideia/);
+  });
+
   it("parses comments from permalinks on a full Reels page dump", () => {
     const root = load("ig-reels-page-dump.html");
     const rows = parseCommentList(root, POST);

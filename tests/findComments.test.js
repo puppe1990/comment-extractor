@@ -66,6 +66,14 @@ it("treats a role=dialog root as the panel", () => {
   ]);
 });
 
+it("finds View all replies on the real Instagram overlay markup", () => {
+  const panel = load("ig-reels-real-overlay.html");
+  const labels = findReplyButtons(panel).map((el) =>
+    el.textContent.replace(/\s+/g, " ").trim(),
+  );
+  expect(labels).toEqual(["View all 2 replies", "View all 1 replies"]);
+});
+
 describe("live Reels comments tray from page dump", () => {
   it("finds the overlay via comment permalinks, not main", () => {
     const root = load("ig-reels-page-dump.html");

@@ -174,30 +174,33 @@ function blockForLink(link, panel) {
   return node;
 }
 
+function textFromNode(node, profileName, nextPermalink) {
+  if (!node) return "";
+  if (node.nodeType !== 1) {
+    const raw = (node.textContent || "").replace(/\s+/g, " ").trim();
+    return isNoiseText(raw, profileName) ? "" : raw;
+  }
+  if (nextPermalink && node.contains(nextPermalink)) return "";
+  return commentTextFromBlock(node, profileName);
+}
+
 function textBetween(start, end, profileName) {
-  const bits = [];
-  let node = start.nextSibling;
-  while (node && node !== end) {
-    if (end && node.contains?.(end)) break;
-    const raw = (node.innerText || node.textContent || "")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (raw && !isNoiseText(raw, profileName)) {
-      const firstLine = raw.split(" ").join(" ").replace(/\s+/g, " ").trim();
-      if (!isNoiseText(firstLine.split(" Reply")[0].trim(), profileName)) {
-        bits.push(raw);
+  let current = start;
+  while (current) {
+    let sibling = current.nextSibling;
+    while (sibling) {
+      if (end && sibling === end) return "";
+      if (end && sibling.nodeType === 1 && sibling.contains(end)) {
+        sibling = sibling.nextSibling;
+        continue;
       }
+      const text = textFromNode(sibling, profileName, end);
+      if (text) return text;
+      sibling = sibling.nextSibling;
     }
-    node = node.nextSibling;
+    current = current.parentElement;
   }
-  for (const bit of bits) {
-    const line = bit
-      .split("\n")
-      .map((part) => part.replace(/\s+/g, " ").trim())
-      .find((part) => !isNoiseText(part, profileName));
-    if (line) return line;
-  }
-  return bits[0] || "";
+  return "";
 }
 
 function parseByPermalinks(panel, permalinks, postUrl) {
