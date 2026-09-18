@@ -48,10 +48,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
     }
     if (msg.type === "PAUSE") {
+      const postUrl = store.runningPostUrl;
       const result = handlePause(store, now);
       await saveStore(result.store);
       if (msg.tabId) {
         chrome.tabs.sendMessage(msg.tabId, { type: "STOP" }).catch(() => {});
+      }
+      if (postUrl) {
+        broadcast(handleGetState(result.store, postUrl, now));
       }
       sendResponse(result);
       return;
@@ -72,18 +76,27 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "BATCH") {
       const result = handleBatch(store, msg, now);
       await saveStore(result.store);
+      if (msg.postUrl) {
+        broadcast(handleGetState(result.store, msg.postUrl, now));
+      }
       sendResponse(result.ack);
       return;
     }
     if (msg.type === "DONE") {
       const result = handleDone(store, msg, now);
       await saveStore(result.store);
+      if (msg.postUrl) {
+        broadcast(handleGetState(result.store, msg.postUrl, now));
+      }
       sendResponse({ ok: true });
       return;
     }
     if (msg.type === "FAIL") {
       const result = handleFail(store, msg, now);
       await saveStore(result.store);
+      if (msg.postUrl) {
+        broadcast(handleGetState(result.store, msg.postUrl, now));
+      }
       sendResponse({ ok: true });
       return;
     }
@@ -95,7 +108,12 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== "extractor") return;
   port.onDisconnect.addListener(async () => {
     const store = await loadStore();
-    const result = handleDisconnect(store, Date.now());
+    const now = Date.now();
+    const postUrl = store.runningPostUrl;
+    const result = handleDisconnect(store, now);
     await saveStore(result.store);
+    if (postUrl) {
+      broadcast(handleGetState(result.store, postUrl, now));
+    }
   });
 });
