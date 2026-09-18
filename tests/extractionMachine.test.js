@@ -17,11 +17,12 @@ describe("extractionMachine", () => {
     expect(pause(start(createMachine())).status).toBe("paused");
   });
 
-  it("completes after 3 empty cycles with no reply buttons", () => {
+  it("completes after 10 empty cycles with no reply buttons and no scroll", () => {
     let m = start(createMachine());
-    m = ingest(m, { newCount: 0, hasMoreReplyButtons: false });
-    m = ingest(m, { newCount: 0, hasMoreReplyButtons: false });
-    expect(m.status).toBe("running");
+    for (let i = 0; i < 9; i += 1) {
+      m = ingest(m, { newCount: 0, hasMoreReplyButtons: false });
+      expect(m.status).toBe("running");
+    }
     m = ingest(m, { newCount: 0, hasMoreReplyButtons: false });
     expect(m.status).toBe("complete");
   });

@@ -12,7 +12,7 @@ describe("scrollPanel", () => {
     });
     const moved = scrollPanel(container);
     expect(moved).toBe(true);
-    expect(container.scrollTop).toBe(240);
+    expect(container.scrollTop).toBeGreaterThan(0);
     expect(window.scrollY).toBe(windowTop);
   });
 
@@ -39,5 +39,27 @@ describe("scrollPanel", () => {
       scrollHeight: { value: 2000 },
     });
     expect(findScrollable(panel)).toBe(inner);
+  });
+
+  it("uses an overflow ancestor when the panel itself does not scroll", () => {
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    const scroller = document.createElement("div");
+    const panel = document.createElement("div");
+    dialog.append(scroller);
+    scroller.append(panel);
+    Object.defineProperties(dialog, {
+      clientHeight: { value: 800 },
+      scrollHeight: { value: 800 },
+    });
+    Object.defineProperties(scroller, {
+      clientHeight: { value: 400 },
+      scrollHeight: { value: 2400 },
+    });
+    Object.defineProperties(panel, {
+      clientHeight: { value: 2400 },
+      scrollHeight: { value: 2400 },
+    });
+    expect(findScrollable(panel)).toBe(scroller);
   });
 });

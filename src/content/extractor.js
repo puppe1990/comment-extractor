@@ -66,11 +66,25 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       click: (el) => el.click(),
       scrollPanel: (panel) => {
         const scroller = findScrollable(panel);
+        const beforeTop = scroller?.scrollTop ?? 0;
+        const beforeHeight = scroller?.scrollHeight ?? 0;
         const last = findCommentPermalinkAnchors(panel).at(-1);
         if (last?.scrollIntoView) {
           last.scrollIntoView({ block: "end", inline: "nearest" });
         }
-        return scrollPanel(scroller);
+        const jumped = scrollPanel(scroller);
+        scroller?.dispatchEvent(
+          new WheelEvent("wheel", {
+            deltaY: 1400,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        return (
+          jumped ||
+          (scroller && scroller.scrollTop !== beforeTop) ||
+          (scroller && scroller.scrollHeight !== beforeHeight)
+        );
       },
       randomDelayMs: () => 700 + Math.floor(Math.random() * 600),
       delay: (ms) => new Promise((r) => setTimeout(r, ms)),

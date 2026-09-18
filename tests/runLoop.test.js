@@ -101,7 +101,7 @@ describe("runLoop", () => {
     expect(result.done.reason).toBe("exhausted");
   });
 
-  it("exhausts after three cycles with zero new ids and no reply buttons", async () => {
+  it("exhausts after 10 cycles with zero new ids and no reply buttons", async () => {
     const h = harness({
       sendBatch: async (batch) => {
         h.batches.push(batch);
@@ -110,8 +110,8 @@ describe("runLoop", () => {
     });
     const result = await runLoop(h.deps);
     expect(result.done.reason).toBe("exhausted");
-    expect(h.batches).toHaveLength(3);
-    expect(h.scrolls.length).toBeGreaterThanOrEqual(2);
+    expect(h.batches).toHaveLength(10);
+    expect(h.scrolls.length).toBeGreaterThanOrEqual(9);
   });
 
   it("stops with reason stopped when isStopped becomes true", async () => {

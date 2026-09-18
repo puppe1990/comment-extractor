@@ -16,6 +16,6 @@ export function ingest(machine, { newCount, hasMoreReplyButtons, scrolled }) {
     return { status: "running", emptyStreak: 0 };
   }
   const emptyStreak = newCount === 0 ? machine.emptyStreak + 1 : 0;
-  if (emptyStreak >= 3) return { status: "complete", emptyStreak };
+  if (emptyStreak >= 10) return { status: "complete", emptyStreak };
   return { status: "running", emptyStreak };
 }
