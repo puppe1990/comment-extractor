@@ -1,0 +1,80 @@
+import { ERRORS } from "./errors.js";
+import { createMachine, ingest, start } from "./extractionMachine.js";
+import { findReplyButtons as defaultFindReplyButtons } from "./findComments.js";
+import { parseCommentList as defaultParse } from "./parseComment.js";
+import { scrollPanel as defaultScroll } from "./scrollPanel.js";
+
+export async function runLoop(deps) {
+  const {
+    postUrl,
+    getPanel,
+    openPanel,
+    parseCommentList = defaultParse,
+    findReplyButtons = defaultFindReplyButtons,
+    click,
+    scrollPanel = defaultScroll,
+    delay,
+    settle,
+    sendBatch,
+    isStopped,
+    now = () => Date.now(),
+    noCommentsTimeoutMs = 8000,
+    randomDelayMs = () => 400 + Math.floor(Math.random() * 501),
+  } = deps;
+
+  let panel = getPanel();
+  if (!panel && openPanel) {
+    openPanel();
+    await settle();
+    panel = getPanel();
+  }
+  if (!panel) {
+    return {
+      fail: { code: "PANEL_NOT_FOUND", message: ERRORS.PANEL_NOT_FOUND },
+    };
+  }
+
+  let machine = start(createMachine());
+  const clicked = new Set();
+  let sawComment = false;
+  const startedAt = now();
+
+  while (machine.status === "running") {
+    if (isStopped()) {
+      return { done: { reason: "stopped", postUrl } };
+    }
+    const rows = parseCommentList(panel, postUrl);
+    if (rows.length > 0) sawComment = true;
+    if (!sawComment && now() - startedAt >= noCommentsTimeoutMs) {
+      return {
+        fail: { code: "NO_COMMENTS_FOUND", message: ERRORS.NO_COMMENTS_FOUND },
+      };
+    }
+    const buttons = findReplyButtons(panel).filter((b) => {
+      const key = b.textContent.trim();
+      return key && !clicked.has(key);
+    });
+    const ack = await sendBatch({
+      postUrl,
+      rows,
+      hasMoreReplyButtons: buttons.length > 0,
+    });
+    machine = ingest(machine, {
+      newCount: ack.addedCount,
+      hasMoreReplyButtons: buttons.length > 0,
+    });
+    for (const button of buttons) {
+      click(button);
+      clicked.add(button.textContent.trim());
+      await settle();
+    }
+    if (machine.status !== "running") break;
+    scrollPanel(panel);
+    await delay(randomDelayMs());
+  }
+
+  if (machine.status === "complete") {
+    return { done: { reason: "exhausted", postUrl } };
+  }
+  return { done: { reason: "stopped", postUrl } };
+}
