@@ -10,9 +10,9 @@ export function pause(machine) {
   return { ...machine, status: "paused" };
 }
 
-export function ingest(machine, { newCount, hasMoreReplyButtons }) {
+export function ingest(machine, { newCount, hasMoreReplyButtons, scrolled }) {
   if (machine.status !== "running") return machine;
-  if (hasMoreReplyButtons) {
+  if (hasMoreReplyButtons || scrolled) {
     return { status: "running", emptyStreak: 0 };
   }
   const emptyStreak = newCount === 0 ? machine.emptyStreak + 1 : 0;

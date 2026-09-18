@@ -96,6 +96,26 @@ describe("parseCommentList heuristic (no data-comment)", () => {
     ]);
   });
 
+  it("marks nested permalinks as replies with reply_to parent", () => {
+    const panel = load("ig-reels-expanded-replies.html");
+    const rows = parseCommentList(panel, POST);
+    expect(rows).toEqual([
+      expect.objectContaining({
+        profileName: "o_viniciusx",
+        type: "comment",
+        replyTo: "",
+        id: "ig:111",
+      }),
+      expect.objectContaining({
+        profileName: "degustar.io",
+        type: "reply",
+        replyTo: "o_viniciusx",
+        id: "ig:222",
+        commentText: expect.stringMatching(/Te chamei no Direct/),
+      }),
+    ]);
+  });
+
   it("parses Instagram overlay where comment text is not a sibling of the timestamp link", () => {
     const panel = load("ig-reels-real-overlay.html");
     const rows = parseCommentList(panel, POST);

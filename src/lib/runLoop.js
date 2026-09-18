@@ -72,20 +72,21 @@ export async function runLoop(deps) {
       rows,
       hasMoreReplyButtons: buttons.length > 0,
     });
-    if (sawComment) {
-      machine = ingest(machine, {
-        newCount: ack.addedCount,
-        hasMoreReplyButtons: buttons.length > 0,
-      });
-    }
     for (const button of buttons) {
       click(button);
       clicked.add(button);
       await settle();
     }
+    const scrolled = Boolean(scrollPanel(panel));
+    if (sawComment) {
+      machine = ingest(machine, {
+        newCount: ack.addedCount,
+        hasMoreReplyButtons: buttons.length > 0,
+        scrolled,
+      });
+    }
     if (machine.status !== "running") break;
-    scrollPanel(panel);
-    await delay(randomDelayMs());
+    await delay(scrolled ? 900 + randomDelayMs() : randomDelayMs());
   }
 
   if (machine.status === "complete") {

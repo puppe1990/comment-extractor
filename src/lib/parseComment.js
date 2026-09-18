@@ -203,10 +203,24 @@ function textBetween(start, end, profileName) {
   return "";
 }
 
+function rowForPermalink(timeLink, panel) {
+  let node = timeLink.parentElement;
+  let best = node;
+  while (node && node !== panel) {
+    const first = [...node.querySelectorAll("a[href]")].find((anchor) =>
+      commentIdFromHref(anchor.getAttribute("href") || ""),
+    );
+    if (first === timeLink) best = node;
+    node = node.parentElement;
+  }
+  return best;
+}
+
 function parseByPermalinks(panel, permalinks, postUrl) {
   const anchors = [...panel.querySelectorAll("a[href]")];
   const rows = [];
   const seen = new Set();
+  const placed = [];
   for (let i = 0; i < permalinks.length; i += 1) {
     const timeLink = permalinks[i];
     const igId = commentIdFromHref(timeLink.getAttribute("href") || "");
@@ -227,19 +241,25 @@ function parseByPermalinks(panel, permalinks, postUrl) {
     if (!profileName || !commentText) continue;
     if (seen.has(igId)) continue;
     seen.add(igId);
+    let parentUsername = "";
+    for (let k = placed.length - 1; k >= 0; k -= 1) {
+      if (placed[k].rowEl?.contains(timeLink)) {
+        parentUsername = placed[k].profileName;
+        break;
+      }
+    }
+    const type = parentUsername ? "reply" : "comment";
+    const replyTo = parentUsername;
+    const rowEl = rowForPermalink(timeLink, panel);
     rows.push({
-      id: commentId(igId, {
-        profileName,
-        type: "comment",
-        replyTo: "",
-        commentText,
-      }),
+      id: commentId(igId, { profileName, type, replyTo, commentText }),
       profileName,
       commentText,
-      type: "comment",
-      replyTo: "",
+      type,
+      replyTo,
       postUrl,
     });
+    placed.push({ rowEl, profileName });
   }
   return rows;
 }

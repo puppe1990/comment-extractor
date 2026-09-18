@@ -1,11 +1,12 @@
 import {
+  findCommentPermalinkAnchors,
   findCommentsButton,
   findCommentsPanel,
   findReplyButtons,
 } from "../lib/findComments.js";
 import { parseCommentList } from "../lib/parseComment.js";
 import { runLoop } from "../lib/runLoop.js";
-import { scrollPanel } from "../lib/scrollPanel.js";
+import { findScrollable, scrollPanel } from "../lib/scrollPanel.js";
 
 let stopFlag = false;
 let port = null;
@@ -64,9 +65,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       findReplyButtons,
       click: (el) => el.click(),
       scrollPanel: (panel) => {
-        const scroller = panel.querySelector("[data-comments-list]") || panel;
-        scrollPanel(scroller);
+        const scroller = findScrollable(panel);
+        const last = findCommentPermalinkAnchors(panel).at(-1);
+        if (last?.scrollIntoView) {
+          last.scrollIntoView({ block: "end", inline: "nearest" });
+        }
+        return scrollPanel(scroller);
       },
+      randomDelayMs: () => 700 + Math.floor(Math.random() * 600),
       delay: (ms) => new Promise((r) => setTimeout(r, ms)),
       settle,
       sendBatch: async (batch) =>

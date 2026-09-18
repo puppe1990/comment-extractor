@@ -35,6 +35,14 @@ describe("extractionMachine", () => {
     expect(m.emptyStreak).toBe(0);
   });
 
+  it("stays running when the list still scrolled even with zero new ids", () => {
+    let m = start(createMachine());
+    m = ingest(m, { newCount: 0, hasMoreReplyButtons: false, scrolled: true });
+    m = ingest(m, { newCount: 0, hasMoreReplyButtons: false, scrolled: true });
+    m = ingest(m, { newCount: 0, hasMoreReplyButtons: false, scrolled: true });
+    expect(m.status).toBe("running");
+  });
+
   it("resets empty streak when new ids arrive", () => {
     let m = start(createMachine());
     m = ingest(m, { newCount: 0, hasMoreReplyButtons: false });
