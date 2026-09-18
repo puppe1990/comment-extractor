@@ -11,7 +11,16 @@
     "service_worker": "src/background/worker.js",
     "type": "module"
   },
-  "permissions": ["storage", "downloads", "activeTab"],
+  "permissions": ["storage", "downloads", "activeTab", "management"],
+  "commands": {
+    "reload-unpacked": {
+      "suggested_key": {
+        "default": "Alt+Shift+R",
+        "mac": "Alt+Shift+R"
+      },
+      "description": "Recarregar extensões unpacked"
+    }
+  },
   "host_permissions": [
     "https://www.instagram.com/*",
     "https://instagram.com/*"

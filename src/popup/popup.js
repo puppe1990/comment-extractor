@@ -5,6 +5,7 @@ const counterEl = document.getElementById("counter");
 const extractBtn = document.getElementById("extract");
 const pauseBtn = document.getElementById("pause");
 const downloadBtn = document.getElementById("download");
+const reloadBtn = document.getElementById("reload");
 
 async function activeTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -52,6 +53,10 @@ downloadBtn.addEventListener("click", async () => {
     tabId: tab.id,
     tabUrl: tab.url,
   });
+});
+
+reloadBtn.addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ type: "RELOAD_UNPACKED" });
 });
 
 chrome.runtime.onMessage.addListener((msg) => {

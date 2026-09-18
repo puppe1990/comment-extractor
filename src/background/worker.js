@@ -1,3 +1,4 @@
+import { unpackedToReload } from "../lib/reloadUnpacked.js";
 import {
   createStore,
   handleBatch,
@@ -25,8 +26,29 @@ function broadcast(state) {
   chrome.runtime.sendMessage({ type: "STATE", state }).catch(() => {});
 }
 
+async function reloadUnpackedExtensions() {
+  const all = await chrome.management.getAll();
+  const others = unpackedToReload(all, chrome.runtime.id);
+  for (const ext of others) {
+    await chrome.management.setEnabled(ext.id, false);
+    await chrome.management.setEnabled(ext.id, true);
+  }
+  chrome.runtime.reload();
+}
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "reload-unpacked") {
+    reloadUnpackedExtensions();
+  }
+});
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
+    if (msg.type === "RELOAD_UNPACKED") {
+      sendResponse({ ok: true });
+      await reloadUnpackedExtensions();
+      return;
+    }
     let store = await loadStore();
     const now = Date.now();
     if (msg.type === "GET_STATE") {

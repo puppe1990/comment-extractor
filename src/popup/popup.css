@@ -35,3 +35,13 @@ button:disabled {
   opacity: 0.45;
   cursor: default;
 }
+button.secondary {
+  border-color: #ddd;
+  color: #444;
+  font-size: 12px;
+}
+.hint {
+  margin: 8px 0 0;
+  color: #888;
+  font-size: 11px;
+}
