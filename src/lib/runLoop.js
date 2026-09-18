@@ -19,14 +19,20 @@ export async function runLoop(deps) {
     isStopped,
     now = () => Date.now(),
     noCommentsTimeoutMs = 8000,
+    panelOpenTimeoutMs = 5000,
     randomDelayMs = () => 400 + Math.floor(Math.random() * 501),
   } = deps;
 
+  const panelWaitStart = now();
   let panel = getPanel();
-  if (!panel && openPanel) {
-    openPanel();
+  while (!panel && now() - panelWaitStart < panelOpenTimeoutMs) {
+    const before = now();
+    if (openPanel) openPanel();
     await settle();
     panel = getPanel();
+    if (panel) break;
+    await delay(randomDelayMs());
+    if (now() <= before) break;
   }
   if (!panel) {
     return {

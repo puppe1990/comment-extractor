@@ -12,17 +12,19 @@ function connect() {
 
 function settle(ms = 300) {
   return new Promise((resolve) => {
-    let timer;
+    let quietTimer;
     const done = () => {
       observer.disconnect();
+      clearTimeout(quietTimer);
+      clearTimeout(maxTimer);
       resolve();
     };
     const observer = new MutationObserver(() => {
-      clearTimeout(timer);
-      timer = setTimeout(done, ms);
+      clearTimeout(quietTimer);
+      quietTimer = setTimeout(done, ms);
     });
     observer.observe(document.body, { childList: true, subtree: true });
-    timer = setTimeout(done, 1200);
+    const maxTimer = setTimeout(done, 1200);
   });
 }
 

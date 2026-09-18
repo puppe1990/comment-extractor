@@ -163,4 +163,41 @@ describe("runLoop", () => {
     await runLoop(h.deps);
     expect(h.clicks).toEqual([a, b]);
   });
+
+  it("retries opening the panel until it appears before the timeout", async () => {
+    let calls = 0;
+    const el = document.createElement("div");
+    const h = harness({
+      getPanel: () => {
+        calls += 1;
+        return calls >= 3 ? el : null;
+      },
+      now: () => calls * 10,
+      panelOpenTimeoutMs: 5000,
+      sendBatch: async (batch) => {
+        h.batches.push(batch);
+        return { addedCount: 0 };
+      },
+    });
+    const result = await runLoop(h.deps);
+    expect(result.fail).toBeUndefined();
+    expect(result.done).toBeTruthy();
+  });
+
+  it("fails PANEL_NOT_FOUND after the panel-open timeout", async () => {
+    let t = 0;
+    const h = harness({
+      getPanel: () => null,
+      now: () => t,
+      delay: async () => {
+        t += 2000;
+      },
+      settle: async () => {
+        t += 2000;
+      },
+      panelOpenTimeoutMs: 5000,
+    });
+    const result = await runLoop(h.deps);
+    expect(result.fail?.code).toBe("PANEL_NOT_FOUND");
+  });
 });
