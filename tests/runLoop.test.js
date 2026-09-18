@@ -127,4 +127,40 @@ describe("runLoop", () => {
     const result = await runLoop(h.deps);
     expect(result.done.reason).toBe("stopped");
   });
+
+  it("does not exhaust an empty panel before the no-comments timeout", async () => {
+    let cycles = 0;
+    const h = harness({
+      parseCommentList: () => [],
+      now: () => (cycles >= 5 ? 100 : 0),
+      delay: async () => {
+        cycles += 1;
+      },
+      noCommentsTimeoutMs: 50,
+    });
+    const result = await runLoop(h.deps);
+    expect(result.fail?.code).toBe("NO_COMMENTS_FOUND");
+    expect(result.done).toBeUndefined();
+    expect(cycles).toBeGreaterThanOrEqual(5);
+  });
+
+  it("clicks two reply buttons that share the same label", async () => {
+    const a = { textContent: "View replies" };
+    const b = { textContent: "View replies" };
+    let finds = 0;
+    const h = harness({
+      findReplyButtons: () => {
+        finds += 1;
+        if (finds === 1) return [a];
+        if (finds === 2) return [a, b];
+        return [];
+      },
+      sendBatch: async (batch) => {
+        h.batches.push(batch);
+        return { addedCount: finds === 1 ? 1 : 0 };
+      },
+    });
+    await runLoop(h.deps);
+    expect(h.clicks).toEqual([a, b]);
+  });
 });

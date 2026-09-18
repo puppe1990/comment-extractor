@@ -51,21 +51,22 @@ export async function runLoop(deps) {
       };
     }
     const buttons = findReplyButtons(panel).filter((b) => {
-      const key = b.textContent.trim();
-      return key && !clicked.has(key);
+      return Boolean(b.textContent.trim()) && !clicked.has(b);
     });
     const ack = await sendBatch({
       postUrl,
       rows,
       hasMoreReplyButtons: buttons.length > 0,
     });
-    machine = ingest(machine, {
-      newCount: ack.addedCount,
-      hasMoreReplyButtons: buttons.length > 0,
-    });
+    if (sawComment) {
+      machine = ingest(machine, {
+        newCount: ack.addedCount,
+        hasMoreReplyButtons: buttons.length > 0,
+      });
+    }
     for (const button of buttons) {
       click(button);
-      clicked.add(button.textContent.trim());
+      clicked.add(button);
       await settle();
     }
     if (machine.status !== "running") break;
