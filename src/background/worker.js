@@ -26,6 +26,10 @@ function broadcast(state) {
   chrome.runtime.sendMessage({ type: "STATE", state }).catch(() => {});
 }
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function reloadUnpackedExtensions() {
   const all = await chrome.management.getAll();
   const others = unpackedToReload(all, chrome.runtime.id);
@@ -34,19 +38,41 @@ async function reloadUnpackedExtensions() {
     await chrome.management.setEnabled(ext.id, true);
   }
   chrome.runtime.reload();
+  return others.length + 1;
 }
 
 chrome.commands.onCommand.addListener((command) => {
   if (command === "reload-unpacked") {
-    reloadUnpackedExtensions();
+    chrome.action.setBadgeText({ text: "…" });
+    chrome.action.setBadgeBackgroundColor({ color: "#111111" });
+    reloadUnpackedExtensions().catch(() => {
+      chrome.action.setBadgeText({ text: "!" });
+    });
   }
 });
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     if (msg.type === "RELOAD_UNPACKED") {
-      sendResponse({ ok: true });
-      await reloadUnpackedExtensions();
+      try {
+        const all = await chrome.management.getAll();
+        const others = unpackedToReload(all, chrome.runtime.id);
+        sendResponse({ ok: true, count: others.length + 1 });
+        await delay(450);
+        for (const ext of others) {
+          await chrome.management.setEnabled(ext.id, false);
+          await chrome.management.setEnabled(ext.id, true);
+        }
+        chrome.runtime.reload();
+      } catch (error) {
+        sendResponse({
+          ok: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Falha ao recarregar extensões.",
+        });
+      }
       return;
     }
     let store = await loadStore();

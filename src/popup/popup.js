@@ -6,6 +6,9 @@ const extractBtn = document.getElementById("extract");
 const pauseBtn = document.getElementById("pause");
 const downloadBtn = document.getElementById("download");
 const reloadBtn = document.getElementById("reload");
+const hintEl = document.querySelector(".hint");
+
+let reloading = false;
 
 async function activeTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -13,6 +16,7 @@ async function activeTab() {
 }
 
 function paint(view) {
+  if (reloading) return;
   statusEl.textContent = view.statusText;
   counterEl.textContent = view.counterText;
   extractBtn.disabled = !view.extractEnabled;
@@ -56,7 +60,39 @@ downloadBtn.addEventListener("click", async () => {
 });
 
 reloadBtn.addEventListener("click", async () => {
-  await chrome.runtime.sendMessage({ type: "RELOAD_UNPACKED" });
+  reloading = true;
+  reloadBtn.disabled = true;
+  reloadBtn.classList.add("is-busy");
+  reloadBtn.textContent = "Recarregando…";
+  statusEl.classList.add("status-busy");
+  statusEl.textContent = "Recarregando extensões unpacked…";
+  if (hintEl) hintEl.textContent = "O popup fecha sozinho ao recarregar.";
+  extractBtn.disabled = true;
+  pauseBtn.disabled = true;
+  downloadBtn.disabled = true;
+  try {
+    const result = await chrome.runtime.sendMessage({
+      type: "RELOAD_UNPACKED",
+    });
+    if (!result?.ok) {
+      throw new Error(result?.message || "Falha ao recarregar.");
+    }
+    const n = result.count || 1;
+    statusEl.textContent =
+      n > 1
+        ? `Recarregando ${n} extensões unpacked…`
+        : "Recarregando esta extensão…";
+  } catch {
+    reloading = false;
+    reloadBtn.disabled = false;
+    reloadBtn.classList.remove("is-busy");
+    reloadBtn.textContent = "Recarregar extensões";
+    statusEl.classList.remove("status-busy");
+    statusEl.textContent =
+      "Não deu para recarregar. Use o botão de recarregar em chrome://extensions.";
+    if (hintEl) hintEl.textContent = "Atalho: Alt+Shift+R";
+    await refresh();
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg) => {

@@ -40,6 +40,16 @@ button.secondary {
   color: #444;
   font-size: 12px;
 }
+button.secondary.is-busy {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+  opacity: 1;
+}
+.status-busy {
+  color: #0b57d0;
+  font-weight: 600;
+}
 .hint {
   margin: 8px 0 0;
   color: #888;
