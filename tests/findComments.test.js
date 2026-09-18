@@ -74,6 +74,25 @@ it("finds View all replies on the real Instagram overlay markup", () => {
   expect(labels).toEqual(["View all 2 replies", "View all 1 replies"]);
 });
 
+it("does not treat the Comment action SVG as the comments panel", () => {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <main>
+      <svg aria-label="Comment" viewBox="0 0 24 24"></svg>
+      <div role="button" aria-label="Comment">811</div>
+    </main>
+    <div class="overlay">
+      <a href="/ana/">ana</a>
+      <a href="/p/DcxhtUfOJj4/c/18114490975965464/">2w</a>
+      <div>amei</div>
+    </div>
+  `;
+  const panel = findCommentsPanel(wrap);
+  expect(panel.tagName).not.toBe("svg");
+  expect(panel.getAttribute("aria-label")).not.toBe("Comment");
+  expect(panel.querySelector("a[href*='/c/']")).not.toBeNull();
+});
+
 describe("live Reels comments tray from page dump", () => {
   it("finds the overlay via comment permalinks, not main", () => {
     const root = load("ig-reels-page-dump.html");

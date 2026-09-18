@@ -56,7 +56,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         const btn = findCommentsButton(document);
         if (btn) btn.click();
       },
-      parseCommentList,
+      parseCommentList: (panel, url) => {
+        const rows = parseCommentList(panel, url);
+        if (rows.length) return rows;
+        return parseCommentList(document, url);
+      },
       findReplyButtons,
       click: (el) => el.click(),
       scrollPanel: (panel) => {

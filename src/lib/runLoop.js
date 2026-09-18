@@ -49,7 +49,15 @@ export async function runLoop(deps) {
     if (isStopped()) {
       return { done: { reason: "stopped", postUrl } };
     }
-    const rows = parseCommentList(panel, postUrl);
+    panel = getPanel() || panel;
+    let rows = parseCommentList(panel, postUrl);
+    if (!rows.length && panel !== getPanel()) {
+      const latest = getPanel();
+      if (latest) {
+        panel = latest;
+        rows = parseCommentList(panel, postUrl);
+      }
+    }
     if (rows.length > 0) sawComment = true;
     if (!sawComment && now() - startedAt >= noCommentsTimeoutMs) {
       return {

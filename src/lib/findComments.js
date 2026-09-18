@@ -60,13 +60,25 @@ function climbFromHeading(heading) {
   return heading.parentElement;
 }
 
+function isCommentActionControl(el) {
+  return el.matches("button, a, svg, [role='button']");
+}
+
 export function findCommentsPanel(root) {
   if (!root) return null;
 
+  const fromLinks = panelFromCommentLinks(root);
+  if (fromLinks) return fromLinks;
+
   const withAria = [root, ...root.querySelectorAll("[aria-label]")];
   const byAria = withAria.find((el) => {
-    if (!el.getAttribute || el.matches("button, a")) return false;
-    return /comment/i.test(el.getAttribute("aria-label") || "");
+    if (!el.getAttribute || isCommentActionControl(el)) return false;
+    const aria = (el.getAttribute("aria-label") || "").trim();
+    if (PANEL_HEADING_RE.test(aria)) return true;
+    return (
+      /comment/i.test(aria) &&
+      el.matches('[role="dialog"], [role="complementary"], section')
+    );
   });
   if (byAria) return byAria;
 
@@ -84,15 +96,20 @@ export function findCommentsPanel(root) {
     );
   if (heading) return climbFromHeading(heading);
 
-  const fromLinks = panelFromCommentLinks(root);
-  if (fromLinks) return fromLinks;
+  const dialogs = [root, ...root.querySelectorAll('[role="dialog"]')].filter(
+    (el) => el.matches?.('[role="dialog"]'),
+  );
+  const dialogWithComments = dialogs.find(
+    (el) =>
+      findCommentPermalinkAnchors(el).length > 0 ||
+      PANEL_HEADING_RE.test(
+        (el.innerText || el.textContent || "").split("\n")[0] || "",
+      ),
+  );
+  if (dialogWithComments) return dialogWithComments;
 
   if (root.matches?.("[data-comments-panel], [role='dialog']")) return root;
-  return (
-    root.querySelector("[data-comments-panel]") ||
-    root.querySelector('[role="dialog"]') ||
-    null
-  );
+  return root.querySelector("[data-comments-panel]") || null;
 }
 
 export function isCommentsPanelOpen(root) {
