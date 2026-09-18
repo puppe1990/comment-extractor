@@ -143,6 +143,24 @@ export function handleDownload(store, tabUrl, now, date = new Date()) {
   };
 }
 
+export function handleClear(store, tabUrl, now) {
+  const parsed = canonicalPostUrl(tabUrl);
+  if (!parsed.ok) {
+    const effect = store.runningPostUrl ? { type: "STOP" } : null;
+    return { store: createStore(), effect };
+  }
+  const wasRunning = store.runningPostUrl === parsed.postUrl;
+  store = {
+    ...store,
+    records: {
+      ...store.records,
+      [parsed.postUrl]: emptyRecord(parsed.postUrl, parsed.shortcode, now),
+    },
+    runningPostUrl: wasRunning ? null : store.runningPostUrl,
+  };
+  return { store, effect: wasRunning ? { type: "STOP" } : null };
+}
+
 export function handleDisconnect(store, now) {
   const postUrl = store.runningPostUrl;
   if (!postUrl || !store.records[postUrl]) return { store };

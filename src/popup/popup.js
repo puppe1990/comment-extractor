@@ -5,6 +5,7 @@ const counterEl = document.getElementById("counter");
 const extractBtn = document.getElementById("extract");
 const pauseBtn = document.getElementById("pause");
 const downloadBtn = document.getElementById("download");
+const clearBtn = document.getElementById("clear");
 const reloadBtn = document.getElementById("reload");
 const hintEl = document.querySelector(".hint");
 
@@ -50,6 +51,16 @@ pauseBtn.addEventListener("click", async () => {
   await refresh();
 });
 
+clearBtn.addEventListener("click", async () => {
+  const tab = await activeTab();
+  await chrome.runtime.sendMessage({
+    type: "CLEAR",
+    tabId: tab.id,
+    tabUrl: tab.url,
+  });
+  await refresh();
+});
+
 downloadBtn.addEventListener("click", async () => {
   const tab = await activeTab();
   await chrome.runtime.sendMessage({
@@ -70,6 +81,7 @@ reloadBtn.addEventListener("click", async () => {
   extractBtn.disabled = true;
   pauseBtn.disabled = true;
   downloadBtn.disabled = true;
+  clearBtn.disabled = true;
   try {
     const result = await chrome.runtime.sendMessage({
       type: "RELOAD_UNPACKED",
@@ -91,6 +103,7 @@ reloadBtn.addEventListener("click", async () => {
     statusEl.textContent =
       "Não deu para recarregar. Use o botão de recarregar em chrome://extensions.";
     if (hintEl) hintEl.textContent = "Atalho: Alt+Shift+R";
+    clearBtn.disabled = false;
     await refresh();
   }
 });

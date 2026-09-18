@@ -9,6 +9,7 @@ import {
   handlePause,
   handleStart,
   handleDone,
+  handleClear,
 } from "../src/lib/workerLogic.js";
 
 const URL = "https://www.instagram.com/reels/DcxhtUfOJj4/";
@@ -133,5 +134,16 @@ describe("workerLogic", () => {
     store = handleBatch(store, { postUrl: URL, rows: [row("a")] }, NOW).store;
     store = handleDisconnect(store, NOW).store;
     expect(store.records[URL].status).toBe("paused");
+  });
+
+  it("CLEAR wipes rows and returns idle, STOP if it was running", () => {
+    let { store } = handleStart(createStore(), URL, NOW);
+    store = handleBatch(store, { postUrl: URL, rows: [row("a")] }, NOW).store;
+    const { store: cleared, effect } = handleClear(store, URL, NOW + 5);
+    expect(effect).toEqual({ type: "STOP" });
+    expect(cleared.records[URL].rows).toEqual([]);
+    expect(cleared.records[URL].status).toBe("idle");
+    expect(cleared.runningPostUrl).toBeNull();
+    expect(handleGetState(cleared, URL, NOW).record.rows).toEqual([]);
   });
 });

@@ -9,6 +9,7 @@ import {
   handleGetState,
   handlePause,
   handleStart,
+  handleClear,
 } from "../lib/workerLogic.js";
 
 const KEY = "extractorStore";
@@ -106,6 +107,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           sendResponse(failed);
           return;
         }
+      }
+      broadcast(handleGetState(result.store, msg.tabUrl, now));
+      sendResponse(result);
+      return;
+    }
+    if (msg.type === "CLEAR") {
+      const result = handleClear(store, msg.tabUrl, now);
+      await saveStore(result.store);
+      if (msg.tabId) {
+        chrome.tabs.sendMessage(msg.tabId, { type: "STOP" }).catch(() => {});
       }
       broadcast(handleGetState(result.store, msg.tabUrl, now));
       sendResponse(result);
