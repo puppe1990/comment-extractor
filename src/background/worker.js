@@ -38,10 +38,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const result = handleStart(store, msg.tabUrl, now);
       await saveStore(result.store);
       if (result.effect?.type === "RUN") {
-        chrome.tabs.sendMessage(msg.tabId, {
-          type: "RUN",
-          postUrl: result.effect.postUrl,
-        });
+        try {
+          await chrome.tabs.sendMessage(msg.tabId, {
+            type: "RUN",
+            postUrl: result.effect.postUrl,
+          });
+        } catch {
+          const failed = handleFail(
+            result.store,
+            {
+              postUrl: result.effect.postUrl,
+              code: "CONTENT_SCRIPT_MISSING",
+              message: "Recarregue a página do Reel e tente de novo.",
+            },
+            now,
+          );
+          await saveStore(failed.store);
+          broadcast(handleGetState(failed.store, msg.tabUrl, now));
+          sendResponse(failed);
+          return;
+        }
       }
       broadcast(handleGetState(result.store, msg.tabUrl, now));
       sendResponse(result);
