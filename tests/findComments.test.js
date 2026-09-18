@@ -43,6 +43,8 @@ describe("findReplyButtons", () => {
       "View replies",
       "View 3 replies",
       "View more replies",
+      "Show more replies",
+      "View hidden comments",
     ]);
   });
 
@@ -54,6 +56,7 @@ describe("findReplyButtons", () => {
       "Ver respostas",
       "Ver 3 respostas",
       "Ver mais respostas",
+      "Ver comentários ocultos",
     ]);
   });
 });

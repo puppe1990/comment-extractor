@@ -1,5 +1,5 @@
 const REPLY_RE =
-  /^\s*(view(\s+all)?(\s+\d+)?\s+repl(?:y|ies)|ver(\s+todas)?(\s+as)?(\s+\d+)?\s+respostas?|view more replies|ver mais respostas)\s*$/i;
+  /^\s*(view(\s+all)?(\s+\d+)?\s+repl(?:y|ies)|ver(\s+todas)?(\s+as)?(\s+\d+)?\s+respostas?|view more replies|show more replies|ver mais respostas|view hidden comments|see hidden comments|ver coment[aá]rios ocultos|mostrar coment[aá]rios ocultos|view more comments|show more comments|ver mais coment[aá]rios)\s*$/i;
 
 const COMMENT_BTN_RE = /comment|coment[aá]rio|comentar/i;
 const PANEL_HEADING_RE = /^(comments|comentários)$/i;
