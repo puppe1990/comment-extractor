@@ -117,10 +117,15 @@ describe("workerLogic", () => {
     ).toBeNull();
     store = handleStart(store, URL, NOW).store;
     store = handleBatch(store, { postUrl: URL, rows: [row("a")] }, NOW).store;
-    const { effect } = handleDownload(store, URL, NOW, new Date(2026, 8, 18));
+    const { effect } = handleDownload(
+      store,
+      URL,
+      NOW,
+      new Date(2026, 8, 18, 19, 20, 57),
+    );
     expect(effect.type).toBe("DOWNLOAD");
     expect(effect.filename).toBe(
-      "instagram-comments-DcxhtUfOJj4-2026-09-18.csv",
+      "instagram-comments-DcxhtUfOJj4-2026-09-18-192057.csv",
     );
     expect(effect.csv).toContain("profile_name");
     expect(effect.csv.startsWith("\uFEFF")).toBe(true);

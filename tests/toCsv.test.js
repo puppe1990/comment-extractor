@@ -44,10 +44,10 @@ describe("toCsv", () => {
 });
 
 describe("csvFilename", () => {
-  it("uses shortcode and local date", () => {
-    const date = new Date(2026, 8, 18);
+  it("uses shortcode and local timestamp", () => {
+    const date = new Date(2026, 8, 18, 19, 20, 57);
     expect(csvFilename("DcxhtUfOJj4", date)).toBe(
-      "instagram-comments-DcxhtUfOJj4-2026-09-18.csv",
+      "instagram-comments-DcxhtUfOJj4-2026-09-18-192057.csv",
     );
   });
 });
